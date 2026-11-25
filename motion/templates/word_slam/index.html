@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../base.css">
+<style>
+  .stack { display: flex; flex-direction: column; align-items: center; gap: 1vw; }
+  .w { font: 800 11.5vw/1 "Montserrat"; text-transform: uppercase; letter-spacing: -0.02em; padding: 0 2vw;
+       color: #fff; -webkit-text-stroke: .5vw #0b0d16; paint-order: stroke fill;
+       text-shadow: 0 1.2vw 0 rgba(0,0,0,.35), 0 0 4vw rgba(0,0,0,.4);
+       animation: slam .42s cubic-bezier(.2,1.6,.4,1) var(--d) both; }
+  .w.alt { color: var(--accent); }
+  .w.alt2 { color: var(--cool); }
+  .w.chip { background: var(--accent); color: #1a1204; -webkit-text-stroke: 0; border-radius: 2.4vw; padding: .6vw 3vw; text-shadow: none;
+            box-shadow: 0 1.4vw 4vw rgba(0,0,0,.45); }
+  @keyframes slam { 0% { opacity: 0; transform: scale(2.4) rotate(-4deg); filter: blur(1vw); } 60% { opacity: 1; transform: scale(.94) rotate(1deg); filter: none; } 100% { opacity: 1; transform: none; } }
+  .em { width: 16vw; height: 16vw; margin-bottom: 1vw; }
+  .shock { position: absolute; left: 50%; top: 40%; width: 80vw; height: 80vw; margin: -40vw 0 0 -40vw; border-radius: 50%;
+           border: 1vw solid rgba(255,255,255,.5); animation: shock .7s ease-out var(--d) both; }
+  @keyframes shock { from { opacity: .8; transform: scale(.2); } to { opacity: 0; transform: scale(1.2); } }
+  /* apple */
+  [data-theme="apple"] .w { font: 800 11vw/1.04 "Inter Tight"; text-transform: none; letter-spacing: -0.045em; -webkit-text-stroke: 0;
+           text-shadow: 0 1vw 4vw rgba(0,0,0,.4); animation: slam-apple .62s var(--spring) var(--d) both; }
+  [data-theme="apple"] .w.alt { color: var(--accent-2); }
+  [data-theme="apple"] .w.alt2 { color: #fff; }
+  [data-theme="apple"] .w.chip { background: var(--accent); color: #fff; border-radius: 99vw; padding: .5vw 4.4vw; text-shadow: none; box-shadow: 0 1.4vw 4vw rgba(10,132,255,.35); }
+  [data-theme="apple"] .shock { display: none; }
+  @keyframes slam-apple { from { opacity: 0; transform: scale(1.35); filter: blur(1.2vw); } to { opacity: 1; transform: none; filter: none; } }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../../runtime.js"></script>
+<script>
+  const P = K.params;
+  const words = (Array.isArray(P.words) ? P.words : String(P.words || "").split(" ")).slice(0, 4);
+  const slot = K.el("div", `card-slot pos-${P.position || "top"}`);
+  const stack = K.el("div", "stack");
+  if (P.icon_svg) stack.appendChild(K.at(K.icon(P.icon_svg, "icon em a-pop"), 0));
+  const step = Math.min(0.32, (K.duration - 1.0) / Math.max(words.length, 1));
+  const styles = ["", "alt", "chip", "alt2"];
+  words.forEach((w, i) => {
+    const d = 0.12 + i * step;
+    const last = i === words.length - 1 && words.length > 1;
+    stack.appendChild(K.at(K.el("div", `w ${last ? "chip" : styles[i % 2 ? 1 : 0]}`, K.esc(w)), d));
+    if (i === 0 || last) slot.appendChild(K.at(K.el("div", "shock"), d + 0.05));
+  });
+  slot.appendChild(stack);
+  document.getElementById("stage").appendChild(slot);
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../base.css">
+<style>
+  .wrap { display: flex; flex-direction: column; align-items: center; gap: 3vw; }
+  .bubble {
+    position: relative; width: 31vw; height: 31vw; border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle at 35% 28%, rgba(255,255,255,.26), rgba(255,255,255,.04) 58%), var(--glass);
+    border: .25vw solid var(--stroke);
+    box-shadow: 0 3vw 8vw rgba(0,0,0,.55), 0 0 7vw color-mix(in srgb, var(--accent) 38%, transparent);
+  }
+  .bubble .icon { width: 19vw; height: 19vw; }
+  .ring { position: absolute; inset: -2vw; border-radius: 50%; border: .5vw solid var(--accent); animation: ring 1.1s ease-out calc(var(--d) + .12s) both; }
+  .ring.r2 { animation-delay: calc(var(--d) + .32s); border-color: var(--cool); }
+  @keyframes ring { 0% { opacity: .95; transform: scale(.55); } 100% { opacity: 0; transform: scale(1.45); } }
+  .spark { position: absolute; width: 2vw; height: 2vw; border-radius: 50%; background: var(--accent-2); animation: spark .9s ease-out calc(var(--d) + .2s) both; }
+  @keyframes spark { 0% { opacity: 1; transform: translate(0,0) scale(1); } 100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(.2); } }
+  .label { padding: 1.8vw 4.6vw; border-radius: 99vw; font-size: 5.6vw; }
+  /* apple */
+  [data-theme="apple"] .bubble { border-radius: 8.4vw; background: var(--glass); border: .14vw solid var(--stroke); box-shadow: 0 2vw 6vw rgba(0,0,0,.2), inset 0 .16vw 0 rgba(255,255,255,.3); }
+  [data-theme="apple"] .ring, [data-theme="apple"] .spark { display: none; }
+  [data-theme="apple"] .label { font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../../runtime.js"></script>
+<script>
+  const P = K.params;
+  const slot = K.el("div", `card-slot pos-${P.position || "top"}`);
+  const wrap = K.el("div", "wrap");
+  const pop = K.at(K.el("div", "a-pop"), 0);
+  const floater = K.at(K.el("div", "a-float"), 0);
+  const bubble = K.el("div", "bubble");
+  bubble.appendChild(K.icon(P.icon_svg));
+  bubble.appendChild(K.at(K.el("div", "ring"), 0));
+  bubble.appendChild(K.at(K.el("div", "ring r2"), 0));
+  for (let i = 0; i < 8; i++) { // patlama kıvılcımları
+    const s = K.at(K.el("div", "spark"), 0);
+    const a = (i / 8) * Math.PI * 2;
+    s.style.setProperty("--x", `${Math.cos(a) * 24}vw`);
+    s.style.setProperty("--y", `${Math.sin(a) * 24}vw`);
+    s.style.left = "calc(50% - 1vw)"; s.style.top = "calc(50% - 1vw)";
+    bubble.appendChild(s);
+  }
+  floater.appendChild(bubble); pop.appendChild(floater); wrap.appendChild(pop);
+  wrap.appendChild(K.at(K.el("div", "label glass title a-rise", K.esc(P.label)), 0.28));
+  slot.appendChild(wrap);
+  document.getElementById("stage").appendChild(slot);
+</script>
+</body>
+</html>

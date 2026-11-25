@@ -1,0 +1,27 @@
+{
+  "id": "process_steps",
+  "name": "Süreç adımları (anlatım)",
+  "description": "Bir şeyin NASIL çalıştığı adım adım anlatıldığında (ör. 'pirojen beyne ulaşır, beyin ısı ayarını yükseltir, vücut ısınır') adımları ikonlar ve akan oklarla sırayla gösteren tam ekran anlatım animasyonu.",
+  "layout": "full",
+  "hide_captions": true,
+  "duration": { "default": 5.0, "min": 3.5, "max": 7.0 },
+  "params": {
+    "title": { "type": "string", "required": true, "max": 34, "description": "Sürecin kısa başlığı" },
+    "steps": {
+      "type": "list", "required": true, "min": 2, "max": 4,
+      "description": "Sıralı adımlar",
+      "item": {
+        "icon": { "type": "icon", "required": true, "description": "İngilizce ikon anahtar kelimesi" },
+        "label": { "type": "string", "required": true, "max": 32, "description": "Adımın kısa açıklaması" }
+      }
+    }
+  },
+  "example": {
+    "title": "Ateş nasıl başlar?",
+    "steps": [
+      { "icon": "microbe", "label": "Pirojenler salgılanır" },
+      { "icon": "brain", "label": "Beyin ısı ayarını yükseltir" },
+      { "icon": "thermometer", "label": "Vücut ısısı artar" }
+    ]
+  }
+}

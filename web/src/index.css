@@ -1,0 +1,24 @@
+/* Arayüz Astryx (Meta, MIT) tasarım sistemiyle çizilir: bileşenler, tema, karanlık mod.
+   Tailwind'in preflight'ı (temel sıfırlama) Astryx bileşen stillerini ezer; Astryx'in kendi reset.css'i
+   kullanıldığı için Tailwind'den yalnızca tema değişkenleri ve yardımcı sınıflar alınır. Yardımcı sınıflar
+   sadece özel çizimlerde (zaman çizelgesi, transkript kelimeleri, video kutusu) kullanılır. */
+@layer theme, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* zaman çizelgesi / transkript iz renkleri */
+@theme {
+  --color-muted: var(--color-text-secondary, #9aa3b8);
+  --color-accent: var(--color-accent, #0a84ff);
+  --color-cut: #ff5d73;
+  --color-broll: #4cc9f0;
+  --color-text: #b794f6;
+  --color-zoom: #2ee6a6;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}

@@ -1,0 +1,16 @@
+{
+  "id": "big_number",
+  "name": "Büyük sayı",
+  "description": "Önemli bir sayı, yüzde, miktar veya istatistik söylendiğinde (ör. '%10 daha fazla enerji', '600 milyon yıl', '37 derece') sayıyı sıfırdan sayarak büyük ve dikkat çekici gösterir.",
+  "layout": "card",
+  "duration": { "default": 3.4, "min": 2.5, "max": 4.5 },
+  "params": {
+    "value": { "type": "number", "required": true, "description": "Gösterilecek sayı (yalnızca rakam), ör. 10" },
+    "prefix": { "type": "string", "max": 4, "description": "Sayıdan önce, ör. '%', '+', '₺'" },
+    "suffix": { "type": "string", "max": 10, "description": "Sayıdan sonra, ör. ' milyon', '°C'" },
+    "label": { "type": "string", "required": true, "max": 40, "description": "Sayının ne olduğu, kısa (videonun dilinde)" },
+    "icon": { "type": "icon", "description": "İngilizce ikon anahtar kelimesi, ör. 'lightning', 'fire'" },
+    "position": { "type": "enum", "values": ["top", "center", "bottom"], "default": "top" }
+  },
+  "example": { "value": 10, "prefix": "%", "suffix": "", "label": "daha fazla enerji harcanır", "icon": "high voltage", "position": "top" }
+}

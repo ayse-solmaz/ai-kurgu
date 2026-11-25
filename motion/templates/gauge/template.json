@@ -1,0 +1,17 @@
+{
+  "id": "gauge",
+  "name": "Termometre / seviye göstergesi",
+  "description": "Bir değerin bir eşiği aştığı veya yükseldiği anlatıldığında (ör. '40 derecenin üzerindeki ateş tehlikelidir', 'vücut ısısı yükselir') dolan bir termometre ve eşik çizgisiyle gösterir.",
+  "layout": "card",
+  "duration": { "default": 3.8, "min": 2.8, "max": 5.0 },
+  "params": {
+    "value": { "type": "number", "required": true, "description": "Ulaşılan değer, ör. 40" },
+    "min": { "type": "number", "default": 35, "description": "Ölçeğin alt sınırı" },
+    "max": { "type": "number", "default": 42, "description": "Ölçeğin üst sınırı" },
+    "unit": { "type": "string", "max": 4, "default": "°C" },
+    "threshold": { "type": "number", "description": "Eşik değeri (isteğe bağlı), ör. 40" },
+    "label": { "type": "string", "required": true, "max": 36, "description": "Kısa açıklama, ör. 'Tehlike sınırı'" },
+    "position": { "type": "enum", "values": ["top", "center", "bottom"], "default": "top" }
+  },
+  "example": { "value": 40, "min": 35, "max": 42, "unit": "°C", "threshold": 40, "label": "Üzeri tehlikeli: doktora başvurun", "position": "top" }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "icon_pop",
+  "name": "İkon vurgusu",
+  "description": "Konuşmada somut bir nesne, canlı veya kavram geçtiğinde (ör. bakteri, beyin, ilaç, demir) büyük bir ikon/emoji ve kısa etiketle vurgular. En sık kullanılabilecek, hafif şablon.",
+  "layout": "card",
+  "duration": { "default": 2.6, "min": 1.8, "max": 3.5 },
+  "params": {
+    "icon": { "type": "icon", "required": true, "description": "İngilizce ikon anahtar kelimesi, ör. 'bacteria', 'brain', 'pill', 'fire'" },
+    "label": { "type": "string", "required": true, "max": 28, "description": "1-3 kelimelik etiket (videonun dilinde)" },
+    "position": { "type": "enum", "values": ["top", "center", "bottom"], "default": "top" }
+  },
+  "example": { "icon": "microbe", "label": "Bakteriler", "position": "top" }
+}

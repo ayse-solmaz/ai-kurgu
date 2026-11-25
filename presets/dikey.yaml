@@ -1,0 +1,45 @@
+# Dikey, tam uzunlukta video (Reels / TikTok / dikey YouTube). Shorts stili, süre sınırı yok.
+name: dikey
+output: {width: 1080, height: 1920, fps: 30}
+max_duration: null
+
+cleanup:
+  silence_min: 0.40
+  padding: 0.08
+  remove_fillers: true
+  remove_stutters: true
+  remove_retakes: true
+  remove_unworded_speech: true
+
+captions:
+  theme: apple             # apple | bold | neon | minimal (boş: aşağıdaki değerler)
+  enabled: true
+  style: karaoke
+  position: center
+  max_words: 3
+  max_chars: 20
+  uppercase: true
+  font: Arial Black
+  size: 84
+  primary: "#FFFFFF"
+  highlight: "#FFD60A"
+  outline_color: "#000000"
+  outline: 7
+  shadow: 2
+  margin_v: 0
+
+reframe:
+  enabled: true
+  track_faces: true
+  fill: crop
+
+zoom: {enabled: true, every_min: 5.0, every_max: 9.0, scale: 1.10, cut_punch: 1.08}
+broll: {enabled: true, every_min: 10.0, every_max: 18.0, min_len: 2.0, max_len: 3.5, mode: full}
+hook: {enabled: true, duration: 3.0}
+
+audio:
+  denoise: true
+  highpass: 70
+  loudness: -14
+  true_peak: -1.5
+  music_db: -26

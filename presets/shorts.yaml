@@ -1,0 +1,45 @@
+# Dikey kısa video: Shorts / Reels / TikTok
+name: shorts
+output: {width: 1080, height: 1920, fps: 30}
+max_duration: 60
+
+cleanup:
+  silence_min: 0.30        # bundan uzun duraklamalar kesilir (sn)
+  padding: 0.06            # konuşmanın etrafında bırakılan pay (sn)
+  remove_fillers: true     # ııı, eee, hmm ...
+  remove_stutters: true    # "ben ben" gibi tekrarlanan kelimeler
+  remove_retakes: true     # yarım kalıp tekrar edilen cümleler
+  remove_unworded_speech: true
+
+captions:
+  theme: apple             # apple | bold | neon | minimal (boş: aşağıdaki değerler)
+  enabled: true
+  style: karaoke           # karaoke | classic | pop
+  position: center
+  max_words: 3
+  max_chars: 18
+  uppercase: true
+  font: Arial Black
+  size: 92
+  primary: "#FFFFFF"
+  highlight: "#FFD60A"
+  outline_color: "#000000"
+  outline: 7
+  shadow: 2
+  margin_v: 0
+
+reframe:
+  enabled: true            # 16:9 kaynağı 9:16'ya yüz takibiyle kırp
+  track_faces: true
+  fill: crop               # crop | blur  (reframe kapalıyken bulanık arka plan)
+
+zoom: {enabled: true, every_min: 3.0, every_max: 5.0, scale: 1.12, cut_punch: 1.08}
+broll: {enabled: true, every_min: 5.0, every_max: 8.0, min_len: 1.5, max_len: 3.0, mode: full}
+hook: {enabled: true, duration: 3.0}
+
+audio:
+  denoise: true
+  highpass: 70
+  loudness: -14            # LUFS
+  true_peak: -1.5
+  music_db: -24

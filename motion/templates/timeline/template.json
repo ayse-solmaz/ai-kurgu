@@ -1,0 +1,27 @@
+{
+  "id": "timeline",
+  "name": "Zaman çizelgesi",
+  "description": "Tarih, evrim veya zaman içindeki gelişim anlatıldığında (ör. '600 milyon yıl öncesine dayanan bu etki balıklarda, kertenkelelerde, memelilerde görülür') noktaları dikey bir zaman çizgisinde sırayla gösteren tam ekran animasyon.",
+  "layout": "full",
+  "hide_captions": true,
+  "duration": { "default": 5.0, "min": 3.5, "max": 7.0 },
+  "params": {
+    "title": { "type": "string", "required": true, "max": 34 },
+    "points": {
+      "type": "list", "required": true, "min": 2, "max": 4,
+      "item": {
+        "when": { "type": "string", "required": true, "max": 18, "description": "Zaman etiketi, ör. '600 milyon yıl önce'" },
+        "text": { "type": "string", "required": true, "max": 30, "description": "O noktada ne olduğu" },
+        "icon": { "type": "icon", "description": "İngilizce ikon anahtar kelimesi" }
+      }
+    }
+  },
+  "example": {
+    "title": "Ateşin evrimi",
+    "points": [
+      { "when": "600 milyon yıl", "text": "Balıklar sıcak sulara yüzer", "icon": "fish" },
+      { "when": "Sürüngenler", "text": "Kertenkeleler güneşlenir", "icon": "lizard" },
+      { "when": "Memeliler", "text": "Ateşi içeriden üretir", "icon": "fire" }
+    ]
+  }
+}

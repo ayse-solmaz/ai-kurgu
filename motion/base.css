@@ -1,0 +1,151 @@
+/* AI Kurgu hareketli grafik tasarım sistemi (tüm şablonlar paylaşır). Ölçüler vw cinsinden:
+   1080 piksel genişlikte 1vw = 10.8px, böylece şablonlar her çözünürlükte aynı görünür. */
+
+@font-face { font-family: "Montserrat"; font-weight: 800; src: url("fonts/montserrat-latin-800.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Montserrat"; font-weight: 800; src: url("fonts/montserrat-latin-ext-800.woff2") format("woff2"); unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Montserrat"; font-weight: 600; src: url("fonts/montserrat-latin-600.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: "Montserrat"; font-weight: 600; src: url("fonts/montserrat-latin-ext-600.woff2") format("woff2"); unicode-range: U+0100-02AF, U+0304, U+0308, U+1E00-1EFF; }
+@font-face { font-family: "Inter"; font-weight: 500; src: url("fonts/inter-latin-500.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: "Inter"; font-weight: 500; src: url("fonts/inter-latin-ext-500.woff2") format("woff2"); unicode-range: U+0100-02AF, U+0304, U+0308, U+1E00-1EFF; }
+@font-face { font-family: "Inter"; font-weight: 700; src: url("fonts/inter-latin-700.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: "Inter"; font-weight: 700; src: url("fonts/inter-latin-ext-700.woff2") format("woff2"); unicode-range: U+0100-02AF, U+0304, U+0308, U+1E00-1EFF; }
+
+@font-face { font-family: "Inter"; font-weight: 600; src: url("fonts/inter-latin-600.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: "Inter"; font-weight: 600; src: url("fonts/inter-latin-ext-600.woff2") format("woff2"); unicode-range: U+0100-02AF, U+0304, U+0308, U+1E00-1EFF; }
+@font-face { font-family: "Inter"; font-weight: 800; src: url("fonts/inter-latin-800.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: "Inter"; font-weight: 800; src: url("fonts/inter-latin-ext-800.woff2") format("woff2"); unicode-range: U+0100-02AF, U+0304, U+0308, U+1E00-1EFF; }
+@font-face { font-family: "Inter Tight"; font-weight: 600; src: url("fonts/inter-tight-latin-600.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: "Inter Tight"; font-weight: 600; src: url("fonts/inter-tight-latin-ext-600.woff2") format("woff2"); unicode-range: U+0100-02AF, U+0304, U+0308, U+1E00-1EFF; }
+@font-face { font-family: "Inter Tight"; font-weight: 700; src: url("fonts/inter-tight-latin-700.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: "Inter Tight"; font-weight: 700; src: url("fonts/inter-tight-latin-ext-700.woff2") format("woff2"); unicode-range: U+0100-02AF, U+0304, U+0308, U+1E00-1EFF; }
+@font-face { font-family: "Inter Tight"; font-weight: 800; src: url("fonts/inter-tight-latin-800.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: "Inter Tight"; font-weight: 800; src: url("fonts/inter-tight-latin-ext-800.woff2") format("woff2"); unicode-range: U+0100-02AF, U+0304, U+0308, U+1E00-1EFF; }
+@font-face { font-family: "Montserrat"; font-weight: 900; src: url("fonts/montserrat-latin-900.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+2000-206F, U+20AC, U+2122; }
+@font-face { font-family: "Montserrat"; font-weight: 900; src: url("fonts/montserrat-latin-ext-900.woff2") format("woff2"); unicode-range: U+0100-02AF, U+0304, U+0308, U+1E00-1EFF; }
+
+:root {
+  --accent: #ffb703;
+  --accent-2: #ffd166;
+  --cool: #4cc9f0;
+  --violet: #9b8cff;
+  --danger: #ff5d73;
+  --ok: #2ee6a6;
+  --ink: #0b0d16;
+  --glass: linear-gradient(150deg, rgba(28, 32, 50, 0.86), rgba(12, 14, 26, 0.8));
+  --stroke: rgba(255, 255, 255, 0.16);
+  --d: 0s;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; background: transparent; overflow: hidden; }
+body { font-family: "Inter", "Segoe UI", sans-serif; color: #fff; -webkit-font-smoothing: antialiased; }
+#stage { position: absolute; inset: 0; animation: k-out 0.45s ease-in var(--out) both; }
+
+/* ------------------------------------------------------------ yüzeyler */
+.glass {
+  background: var(--glass);
+  border: 0.18vw solid var(--stroke);
+  border-radius: 4vw;
+  box-shadow: 0 3vw 8vw rgba(0, 0, 0, 0.5), inset 0 0.2vw 0 rgba(255, 255, 255, 0.14);
+  position: relative;
+  overflow: hidden;
+}
+.glass::before { /* üst parlama */
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(120% 60% at 20% -10%, rgba(255, 255, 255, 0.16), transparent 60%);
+  pointer-events: none;
+}
+.fullbg { /* tam ekran şablonlar için animasyonlu arka plan */
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(60% 40% at 20% 15%, color-mix(in srgb, var(--accent) 35%, transparent), transparent 70%),
+    radial-gradient(55% 45% at 85% 85%, rgba(76, 201, 240, 0.28), transparent 70%),
+    radial-gradient(80% 60% at 50% 50%, #151a2e, #070810);
+  animation: k-bg-in 0.5s ease-out both, k-drift 8s ease-in-out infinite alternate;
+  background-size: 140% 140%;
+}
+
+/* ------------------------------------------------------------ tipografi */
+.title { font-family: "Montserrat", sans-serif; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+.kicker { font-family: "Montserrat", sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.18em; color: var(--accent-2); font-size: 2.6vw; }
+.accent { color: var(--accent); }
+.glow { text-shadow: 0 0 2vw color-mix(in srgb, var(--accent) 60%, transparent); }
+
+/* ------------------------------------------------------------ ikonlar */
+.icon { display: grid; place-items: center; }
+.icon svg { width: 100%; height: 100%; filter: drop-shadow(0 1vw 2vw rgba(0, 0, 0, 0.45)); }
+
+/* ------------------------------------------------------------ giriş animasyonları (gecikme: var(--d)) */
+.a-pop { animation: k-pop 0.62s cubic-bezier(0.2, 1.4, 0.4, 1) var(--d) both; }
+.a-rise { animation: k-rise 0.55s cubic-bezier(0.2, 0.9, 0.2, 1) var(--d) both; }
+.a-fade { animation: k-fade 0.5s ease-out var(--d) both; }
+.a-slide-l { animation: k-slide-l 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) var(--d) both; }
+.a-slide-r { animation: k-slide-r 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) var(--d) both; }
+.a-grow-x { transform-origin: left center; animation: k-grow-x 0.7s cubic-bezier(0.6, 0, 0.2, 1) var(--d) both; }
+.a-float { animation: k-float 2.6s ease-in-out calc(var(--d) + 0.6s) infinite alternate; }
+.a-pulse { animation: k-pulse 1.4s ease-in-out calc(var(--d) + 0.5s) infinite; }
+
+@keyframes k-pop { 0% { opacity: 0; transform: scale(0.4) rotate(-6deg); } 70% { opacity: 1; transform: scale(1.06) rotate(1deg); } 100% { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes k-rise { from { opacity: 0; transform: translateY(6vw) scale(0.96); filter: blur(0.6vw); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes k-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes k-slide-l { from { opacity: 0; transform: translateX(-12vw); } to { opacity: 1; transform: none; } }
+@keyframes k-slide-r { from { opacity: 0; transform: translateX(12vw); } to { opacity: 1; transform: none; } }
+@keyframes k-grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes k-float { from { transform: translateY(0); } to { transform: translateY(-1.2vw); } }
+@keyframes k-pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); } 50% { box-shadow: 0 0 0 2.4vw transparent; } }
+@keyframes k-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.97); filter: blur(0.4vw); } }
+@keyframes k-bg-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes k-drift { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
+
+/* ------------------------------------------------------------ yerleşim: kart şablonları */
+.card-slot { position: absolute; left: 6vw; right: 6vw; display: flex; justify-content: center; }
+.pos-top { top: 9vh; }
+.pos-center { top: 32vh; }
+.pos-bottom { bottom: 30vh; } /* altyazının üstünde kalır */
+
+/* ============================================================ TEMA: apple
+   Apple'ın arayüz dilinden esinlenir: Inter / Inter Tight (SF Pro'nun açık lisanslı karşılığı),
+   Apple sistem renkleri (koyu mod), yarı saydam "Liquid Glass" yüzeyler, yaylı (spring) hareketler.
+   Kartların arkasındaki video, render sırasında ffmpeg ile bulanıklaştırılır (gerçek buzlu cam);
+   bu yüzden yüzeyler burada saydam bırakılır. */
+[data-theme="apple"] {
+  --accent: #0A84FF;   /* systemBlue */
+  --accent-2: #64D2FF; /* systemCyan */
+  --cool: #5E5CE6;     /* systemIndigo */
+  --violet: #BF5AF2;   /* systemPurple */
+  --danger: #FF453A;   /* systemRed */
+  --ok: #30D158;       /* systemGreen */
+  --warn: #FFD60A;     /* systemYellow */
+  --label-2: rgba(235, 235, 245, 0.62); /* secondaryLabel */
+  --glass: linear-gradient(165deg, rgba(72, 72, 78, 0.50), rgba(30, 30, 34, 0.44));
+  --stroke: rgba(255, 255, 255, 0.20);
+  --spring: cubic-bezier(0.32, 1.32, 0.56, 1);
+  --smooth: cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-theme="apple"] body { font-family: "Inter", system-ui, sans-serif; letter-spacing: -0.005em; }
+[data-theme="apple"] .glass {
+  background: var(--glass);
+  border: 0.14vw solid var(--stroke);
+  border-radius: 5.4vw;
+  box-shadow: 0 2.4vw 6vw rgba(0, 0, 0, 0.20), inset 0 0.16vw 0 rgba(255, 255, 255, 0.30), inset 0 -0.12vw 0 rgba(255, 255, 255, 0.07);
+}
+[data-theme="apple"] .glass::before { /* cam kenarındaki ışık kırılması */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), transparent 34%),
+    radial-gradient(90% 50% at 85% 110%, rgba(255, 255, 255, 0.07), transparent 60%);
+}
+[data-theme="apple"] .fullbg { /* tam ekran: bulanık videonun üstünde koyu buzlu katman */
+  background: radial-gradient(120% 80% at 50% 0%, rgba(40, 40, 46, 0.46), rgba(8, 8, 10, 0.62));
+  animation: k-bg-in 0.5s ease-out both;
+}
+[data-theme="apple"] .title { font-family: "Inter Tight", "Inter", sans-serif; font-weight: 700; letter-spacing: -0.02em; line-height: 1.08; }
+[data-theme="apple"] .kicker { font-family: "Inter", sans-serif; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--label-2); font-size: 3.4vw; }
+[data-theme="apple"] .glow { text-shadow: none; }
+[data-theme="apple"] .icon svg { filter: none; } /* tek renk çizgi ikon: gölgesiz, sade */
+[data-theme="apple"] .a-pop { animation-name: k-pop-apple; animation-duration: 0.7s; animation-timing-function: var(--spring); }
+[data-theme="apple"] .a-rise { animation-name: k-rise-apple; animation-duration: 0.75s; animation-timing-function: var(--smooth); }
+[data-theme="apple"] .a-slide-l, [data-theme="apple"] .a-slide-r, [data-theme="apple"] .a-grow-x { animation-timing-function: var(--smooth); }
+[data-theme="apple"] #stage { animation: k-out-apple 0.45s ease-in var(--out) both; }
+@keyframes k-pop-apple { from { opacity: 0; transform: scale(0.8); filter: blur(0.8vw); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes k-rise-apple { from { opacity: 0; transform: translateY(4vw) scale(0.94); filter: blur(1vw); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes k-out-apple { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.96) translateY(-1vw); filter: blur(0.8vw); } }

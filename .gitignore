@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Kullanıcı verisi ve büyük dosyalar
+projects/
+models_cache/
+samples/*.mp4
+samples/*.wav
+*.mp4
+*.mov
+*.webm
+.cache/
+.env
+
+# İndirilen / üretilen varlıklar (scripts/fetch_fonts.py, ikon önbelleği, sentez ses efektleri)
+assets/fonts/*.ttf
+motion/fonts/*.woff2
+assets/icons/
+assets/sfx/*.wav
+assets/greenscreen/*
+!assets/greenscreen/.gitkeep
+assets/music/*/
+
+# Harici araçlar (ACE-Step ayrı kurulur: scripts/setup_music.ps1)
+tools/
+
+# Web / masaüstü derleme çıktıları
+web/node_modules/
+web/dist/
+desktop/node_modules/
+desktop/dist/
+desktop/build-backend/
+*.log
+
+# Editör / yerel ayarlar
+.claude/
+.vscode/
+.idea/
+web/tsconfig.tsbuildinfo

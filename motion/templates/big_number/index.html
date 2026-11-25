@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../base.css">
+<style>
+  .card { width: 88vw; padding: 5vw 5.5vw 4.6vw; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 1vw 5vw; }
+  .card .icon { width: 20vw; height: 20vw; grid-row: span 2; }
+  .num {
+    font-size: 19vw; line-height: .95; white-space: nowrap;
+    background: linear-gradient(180deg, #fff 10%, var(--accent-2) 55%, var(--accent));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 .6vw 2vw color-mix(in srgb, var(--accent) 45%, transparent));
+  }
+  .label { font-size: 5vw; font-weight: 700; color: rgba(255,255,255,.92); line-height: 1.15; }
+  .bar { grid-column: 1 / -1; height: 1.1vw; border-radius: 1vw; margin-top: 2.6vw; background: linear-gradient(90deg, var(--accent), var(--cool)); }
+  /* apple */
+  [data-theme="apple"] .num { background: none; color: #fff; filter: none; font-weight: 700; letter-spacing: -0.03em; }
+  [data-theme="apple"] .card .icon { width: 13vw; height: 13vw; padding: 3.2vw; border-radius: 4.4vw; background: rgba(255,255,255,.10); }
+  [data-theme="apple"] .label { color: var(--label-2); font-weight: 600; }
+  [data-theme="apple"] .bar { height: .6vw; background: var(--accent); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../../runtime.js"></script>
+<script>
+  const P = K.params;
+  const value = Number(P.value) || 0;
+  const decimals = (String(P.value).split(/[.,]/)[1] || "").length;
+  const fmt = (v) => v.toLocaleString("tr-TR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  const slot = K.el("div", `card-slot pos-${P.position || "top"}`);
+  const card = K.at(K.el("div", "glass card a-rise"), 0);
+  if (P.icon_svg) card.appendChild(K.at(K.icon(P.icon_svg, "icon a-pop"), 0.15));
+  const num = K.el("div", "num title"); card.appendChild(num);
+  card.appendChild(K.at(K.el("div", "label a-fade", K.esc(P.label)), 0.55));
+  card.appendChild(K.at(K.el("div", "bar a-grow-x"), 0.35));
+  slot.appendChild(card);
+  document.getElementById("stage").appendChild(slot);
+  // "milyon yıl" gibi kelime birimlerinden önce boşluk; uzun ifadelerde yazı karta sığacak kadar küçülür
+  const suffix = P.suffix ? (/^[A-Za-zÇĞİÖŞÜçğıöşü]/.test(P.suffix) ? ` ${P.suffix}` : P.suffix) : "";
+  const prefix = P.prefix || "";
+  const longest = `${prefix}${fmt(value)}${suffix}`.length;
+  num.style.fontSize = `${Math.max(8, Math.min(19, 92 / Math.max(longest, 1)))}vw`;
+  const draw = (t) => {
+    const x = K.ease((t - 0.25) / 1.15);
+    num.textContent = `${prefix}${fmt(value * x)}${suffix}`;
+  };
+  K.onFrame(draw);
+  draw(0);
+</script>
+</body>
+</html>

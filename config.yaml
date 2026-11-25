@@ -1,0 +1,55 @@
+# AI Kurgu yapılandırması
+# Bu dosyadaki değerler `scripts/benchmark.py` sonuçlarına göre ayarlanabilir.
+
+# true iken ticari kullanıma izin vermeyen lisanslı modeller yüklenmez (models_registry.yaml).
+commercial_mode: true
+
+projects_dir: projects
+models_cache: models_cache
+
+# Konuşma dili. null = otomatik algıla.
+language: tr
+
+models:
+  asr: whisper-large-v3-turbo
+  llm: qwen3:30b-a3b    # MoE, 3B aktif; işlemcide ~12 tok/sn. Daha zayıf bilgisayarda: qwen3:8b
+  vlm: qwen3-vl:4b
+  image: flux-schnell-ov-int4
+  depth: depth-anything-v2-small
+  video: wan2.1-t2v-1.3b
+  tts: chatterbox-multilingual
+
+devices:
+  asr: cpu              # cpu | cuda
+  asr_compute_type: int8
+  openvino: GPU         # OpenVINO cihazı: CPU | GPU | NPU
+
+ollama:
+  # Uygulama kendi Ollama sunucusunu ayrı portta, Intel iGPU açık olarak başlatır
+  # (kullanıcının varsayılan Ollama'sı 11434'te olduğu gibi kalır). Ölçüm: iGPU ~4x hızlı.
+  host: http://127.0.0.1:11435
+  manage: true
+  igpu: true
+  timeout: 600
+  keep_alive: 5m        # görsel üretimden önce 0 ile boşaltılır
+  vision_frames: 2      # planlayıcının görsel modele gösterdiği kare sayısı (0 = kapalı)
+  cpu_models: ["qwen3:30b-a3b"]  # iGPU belleğine sığmayan modeller işlemcide çalışır
+
+render:
+  encoder: auto         # auto | h264_qsv | h264_nvenc | libx264
+  quality: 21           # libx264 CRF / QSV global_quality
+  audio_bitrate: 192k
+  preview_height: 540
+  fonts_dir: assets/fonts
+
+assets:
+  # Sırayla denenir; biri başarısız olursa bir sonrakine geçilir.
+  providers: [local_image_motion, cloud_worker, stock, local_video]
+  cloud_worker_url: null          # Kaggle/Colab veya ücretli GPU worker'ın adresi
+  cloud_image_model: flux-schnell # worker'daki görsel modeli (minimax-h3-image ticari modda kapalı)
+  cloud_video_model: wan2.1-t2v-1.3b
+  pexels_api_key_env: PEXELS_API_KEY
+  pixabay_api_key_env: PIXABAY_API_KEY
+
+memory:
+  max_heavy_models: 1

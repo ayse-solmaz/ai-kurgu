@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../base.css">
+<style>
+  .col { position: absolute; inset: 11vh 7vw 10vh; display: flex; flex-direction: column; }
+  .head { text-align: center; margin-bottom: 5vh; }
+  .head .title { font-size: 8.6vw; margin-top: 1.4vh; }
+  .track { position: relative; flex: 1; display: flex; flex-direction: column; justify-content: space-around; padding-left: 16vw; }
+  .rail { position: absolute; left: 6.6vw; top: 2vh; bottom: 2vh; width: 1vw; border-radius: 1vw;
+          background: linear-gradient(180deg, var(--accent), var(--violet), var(--cool));
+          transform-origin: top; animation: grow-y var(--rail) cubic-bezier(.4,0,.2,1) .35s both; }
+  @keyframes grow-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  .pt { position: relative; }
+  .dot { position: absolute; left: -12.2vw; top: 50%; width: 7vw; height: 7vw; margin-top: -3.5vw; border-radius: 50%;
+         background: #0b0d16; border: 1vw solid var(--accent); box-shadow: 0 0 3vw color-mix(in srgb, var(--accent) 70%, transparent); }
+  .box { padding: 3.2vw 4vw; border-radius: 3.4vw; display: flex; align-items: center; gap: 3.6vw; }
+  .box .icon { width: 13vw; height: 13vw; flex: none; }
+  .when { font: 800 5.4vw/1.05 "Montserrat"; color: var(--accent-2); }
+  .txt { font: 700 4.7vw/1.2 "Inter"; margin-top: .8vw; color: rgba(255,255,255,.92); }
+  /* apple */
+  [data-theme="apple"] .rail { width: .6vw; background: rgba(255,255,255,.24); }
+  [data-theme="apple"] .dot { width: 5vw; height: 5vw; margin-top: -2.5vw; left: -11.2vw; background: var(--accent); border: .6vw solid #fff; box-shadow: none; }
+  [data-theme="apple"] .when { font: 700 4.6vw/1.05 "Inter"; letter-spacing: -0.01em; color: var(--accent-2); }
+  [data-theme="apple"] .txt { font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="stage"><div class="fullbg"></div></div>
+<script src="../../runtime.js"></script>
+<script>
+  const P = K.params;
+  const pts = (P.points || []).slice(0, 4);
+  const col = K.el("div", "col");
+  const head = K.el("div", "head");
+  head.appendChild(K.at(K.el("div", "kicker a-fade", "Zaman içinde"), 0.1));
+  head.appendChild(K.at(K.el("div", "title a-rise", K.esc(P.title)), 0.15));
+  col.appendChild(head);
+  const track = K.el("div", "track");
+  const gap = Math.min(1.0, (K.duration - 1.8) / Math.max(pts.length, 1));
+  track.style.setProperty("--rail", `${0.4 + gap * pts.length}s`);
+  track.appendChild(K.el("div", "rail"));
+  pts.forEach((p, i) => {
+    const d = 0.5 + i * gap;
+    const pt = K.el("div", "pt");
+    pt.appendChild(K.at(K.el("div", "dot a-pop"), d));
+    const box = K.at(K.el("div", "box glass a-slide-r"), d + 0.08);
+    if (p.icon_svg) box.appendChild(K.icon(p.icon_svg));
+    const t = K.el("div");
+    t.appendChild(K.el("div", "when", K.esc(p.when)));
+    t.appendChild(K.el("div", "txt", K.esc(p.text)));
+    box.appendChild(t);
+    pt.appendChild(box);
+    track.appendChild(pt);
+  });
+  col.appendChild(track);
+  document.getElementById("stage").appendChild(col);
+</script>
+</body>
+</html>

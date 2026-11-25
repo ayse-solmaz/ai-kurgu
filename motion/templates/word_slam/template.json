@@ -1,0 +1,15 @@
+{
+  "id": "word_slam",
+  "name": "Kelime patlaması",
+  "description": "Vurucu, akılda kalıcı bir cümle veya soru söylendiğinde (ör. 'Peki bu iyi bir fikir mi?', 'Ateş bir müttefik') 1-4 kelimeyi ekrana tek tek çarparak gösteren kinetik tipografi.",
+  "layout": "card",
+  "hide_captions": true,
+  "glass": false,
+  "duration": { "default": 2.6, "min": 1.8, "max": 3.5 },
+  "params": {
+    "words": { "type": "list", "required": true, "min": 1, "max": 4, "item_type": "string", "item_max": 22, "description": "Sırayla çıkacak 1-4 kelime" },
+    "icon": { "type": "icon", "description": "İsteğe bağlı emoji/ikon anahtar kelimesi" },
+    "position": { "type": "enum", "values": ["top"], "default": "top" }
+  },
+  "example": { "words": ["Bu", "iyi", "bir fikir mi?"], "icon": "thinking face", "position": "top" }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "cta",
+  "name": "Etkileşim çağrısı",
+  "description": "Konuşmacı izleyiciden abone olmasını, beğenmesini, takip etmesini, yorum yapmasını veya paylaşmasını istediğinde imleçle tıklanan bir buton animasyonu gösterir (klasik 'abone ol' greenscreen'inin şeffaf, şık sürümü).",
+  "layout": "card",
+  "auto": true,
+  "duration": { "default": 3.4, "min": 2.6, "max": 4.5 },
+  "triggers": {
+    "subscribe": ["abone ol", "abone olun", "abone olmayı", "abone olmayı unutma", "kanala abone", "subscribe"],
+    "like": ["beğen", "beğenmeyi", "beğenirseniz", "like at", "kalbe bas", "like"],
+    "follow": ["takip et", "takip edin", "takip etmeyi", "takipte kal", "follow"],
+    "comment": ["yorum yap", "yorumlara yaz", "yorumlarda", "yoruma yaz", "comment"],
+    "share": ["paylaş", "paylaşın", "paylaşmayı", "share"],
+    "bell": ["bildirim", "zile bas", "zil simgesi", "bildirimleri aç"]
+  },
+  "params": {
+    "variant": { "type": "enum", "values": ["subscribe", "like", "follow", "comment", "share", "bell"], "default": "subscribe" },
+    "label": { "type": "string", "max": 22, "description": "Buton yazısı (boşsa varyantın varsayılanı)" },
+    "done_label": { "type": "string", "max": 22, "description": "Tıklandıktan sonraki yazı" },
+    "handle": { "type": "string", "max": 28, "description": "İsteğe bağlı kanal/hesap adı, ör. '@kanal'" },
+    "position": { "type": "enum", "values": ["lower", "center", "top"], "default": "lower" }
+  },
+  "example": { "variant": "subscribe", "handle": "@aikurgu", "position": "lower" }
+}

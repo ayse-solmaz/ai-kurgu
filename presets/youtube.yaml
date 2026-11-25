@@ -1,0 +1,45 @@
+# Yatay uzun video: YouTube
+name: youtube
+output: {width: 1920, height: 1080, fps: 30}
+max_duration: null
+
+cleanup:
+  silence_min: 0.60
+  padding: 0.12
+  remove_fillers: true
+  remove_stutters: true
+  remove_retakes: true
+  remove_unworded_speech: false
+
+captions:
+  theme: apple             # apple | bold | neon | minimal (boş: aşağıdaki değerler)
+  enabled: true
+  style: classic
+  position: bottom
+  max_words: 7
+  max_chars: 42
+  uppercase: false
+  font: Arial
+  size: 54
+  primary: "#FFFFFF"
+  highlight: "#FFD60A"
+  outline_color: "#000000"
+  outline: 3
+  shadow: 1
+  margin_v: 70
+
+reframe:
+  enabled: false
+  track_faces: false
+  fill: blur
+
+zoom: {enabled: false, every_min: 8.0, every_max: 15.0, scale: 1.08}
+broll: {enabled: true, every_min: 15.0, every_max: 30.0, min_len: 2.5, max_len: 5.0, mode: full}
+hook: {enabled: false, duration: 3.0}
+
+audio:
+  denoise: true
+  highpass: 70
+  loudness: -14
+  true_peak: -1.5
+  music_db: -28

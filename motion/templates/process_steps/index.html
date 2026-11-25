@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../base.css">
+<style>
+  .col { position: absolute; inset: 11vh 7vw 9vh; display: flex; flex-direction: column; }
+  .head { text-align: center; margin-bottom: 5vh; }
+  .head .title { font-size: 8.6vw; margin-top: 1.4vh; }
+  .steps { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0; }
+  .step { display: flex; align-items: center; gap: 5vw; padding: 3.2vw 4vw; border-radius: 3.4vw; }
+  .badge {
+    flex: none; width: 21vw; height: 21vw; border-radius: 50%; display: grid; place-items: center; position: relative;
+    background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.22), rgba(255,255,255,.03) 60%), rgba(255,255,255,.05);
+    border: .3vw solid color-mix(in srgb, var(--accent) 70%, white 10%);
+  }
+  .badge .icon { width: 13vw; height: 13vw; }
+  .num { position: absolute; top: -1vw; right: -1vw; width: 7vw; height: 7vw; border-radius: 50%; display: grid; place-items: center;
+         background: var(--accent); color: #1a1204; font: 800 3.8vw "Montserrat"; box-shadow: 0 .8vw 2vw rgba(0,0,0,.4); }
+  .txt { font: 700 5.6vw/1.15 "Inter"; }
+  .link { height: 7.5vh; display: flex; align-items: center; padding-left: 14.5vw; }
+  .line { width: .9vw; height: 100%; border-radius: 1vw; background: linear-gradient(180deg, var(--accent), var(--cool));
+          transform-origin: top; animation: grow-y .45s cubic-bezier(.6,0,.2,1) var(--d) both; position: relative; }
+  .line::after { content: ""; position: absolute; left: 50%; bottom: -1.6vw; width: 3.4vw; height: 3.4vw; transform: translateX(-50%) rotate(45deg);
+                 border-right: .9vw solid var(--cool); border-bottom: .9vw solid var(--cool); border-radius: .3vw; }
+  @keyframes grow-y { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+  .step.on .badge { animation: lit .9s ease-out var(--d) both; }
+  @keyframes lit { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 70%, transparent); } 100% { box-shadow: 0 0 0 4vw transparent; } }
+  /* apple */
+  [data-theme="apple"] .badge { background: rgba(255,255,255,.09); border: .16vw solid rgba(255,255,255,.2); border-radius: 6vw; }
+  [data-theme="apple"] .num { background: var(--accent); color: #fff; font: 700 3.6vw "Inter"; box-shadow: none; }
+  [data-theme="apple"] .txt { font-weight: 600; }
+  [data-theme="apple"] .line { width: .6vw; background: rgba(255,255,255,.32); }
+  [data-theme="apple"] .line::after { border-color: rgba(255,255,255,.32); }
+  [data-theme="apple"] .step.on .badge { animation: none; }
+</style>
+</head>
+<body>
+<div id="stage"><div class="fullbg"></div></div>
+<script src="../../runtime.js"></script>
+<script>
+  const P = K.params;
+  const steps = (P.steps || []).slice(0, 4);
+  const col = K.el("div", "col");
+  const head = K.el("div", "head");
+  head.appendChild(K.at(K.el("div", "kicker a-fade", "Nasıl çalışır?"), 0.1));
+  head.appendChild(K.at(K.el("div", "title a-rise", K.esc(P.title)), 0.15));
+  col.appendChild(head);
+  const list = K.el("div", "steps");
+  const gap = Math.min(0.9, (K.duration - 1.6) / Math.max(steps.length, 1));
+  steps.forEach((s, i) => {
+    const d = 0.55 + i * gap;
+    if (i > 0) { const link = K.el("div", "link"); link.appendChild(K.at(K.el("div", "line"), d - 0.3)); list.appendChild(link); }
+    const row = K.at(K.el("div", "step glass on a-slide-l"), d);
+    const badge = K.el("div", "badge");
+    badge.appendChild(K.icon(s.icon_svg));
+    badge.appendChild(K.el("div", "num", String(i + 1)));
+    row.appendChild(badge);
+    row.appendChild(K.el("div", "txt", K.esc(s.label)));
+    list.appendChild(row);
+  });
+  col.appendChild(list);
+  document.getElementById("stage").appendChild(col);
+</script>
+</body>
+</html>

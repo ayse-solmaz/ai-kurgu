@@ -1,0 +1,15 @@
+{
+  "id": "callout",
+  "name": "Uyarı / bilgi kartı",
+  "description": "Önemli bir uyarı, ipucu veya akılda tutulması gereken bir sonuç söylendiğinde (ör. 'kritik hastalarda ateşi agresif düşürmek ölüm oranını artırdı', 'sağlıklı biri için ateş bir müttefik') renkli bir kartla vurgular.",
+  "layout": "card",
+  "duration": { "default": 3.8, "min": 2.8, "max": 5.0 },
+  "params": {
+    "variant": { "type": "enum", "values": ["warning", "info", "tip"], "default": "info", "description": "warning: kırmızı uyarı, info: mavi bilgi, tip: yeşil ipucu" },
+    "title": { "type": "string", "required": true, "max": 30 },
+    "text": { "type": "string", "required": true, "max": 70, "description": "1 kısa cümle" },
+    "icon": { "type": "icon", "description": "İngilizce ikon anahtar kelimesi" },
+    "position": { "type": "enum", "values": ["top", "center", "bottom"], "default": "top" }
+  },
+  "example": { "variant": "warning", "title": "Dikkat", "text": "Ateşi agresif düşürmek kritik hastalarda riski artırabilir", "icon": "warning", "position": "top" }
+}

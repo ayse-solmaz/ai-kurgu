@@ -1,0 +1,165 @@
+# Kullanılabilir modeller ve lisansları.
+# commercial_ok: false olan modeller config.yaml'da commercial_mode: true iken yüklenmez.
+
+whisper-large-v3-turbo:
+  kind: asr
+  source: large-v3-turbo            # faster-whisper takma adı (CTranslate2 dönüşümü)
+  license: MIT
+  commercial_ok: true
+
+whisper-small:
+  kind: asr
+  source: small
+  license: MIT
+  commercial_ok: true
+
+qwen3:8b:
+  kind: llm
+  source: ollama
+  license: Apache-2.0
+  commercial_ok: true
+
+qwen3:30b-a3b:
+  kind: llm
+  source: ollama
+  license: Apache-2.0
+  commercial_ok: true
+
+qwen3-vl:4b:
+  kind: vlm
+  source: ollama
+  license: Apache-2.0
+  commercial_ok: true
+
+qwen3-vl:8b:
+  kind: vlm
+  source: ollama
+  license: Apache-2.0
+  commercial_ok: true
+
+llama3.2-vision:
+  kind: vlm
+  source: ollama
+  license: Llama-3.2-Community
+  commercial_ok: false              # AB'de görsel modeller için kısıtlama var
+  note: Kullanım politikası ve bölge kısıtlamaları içerir
+
+flux-schnell-ov-int4:
+  kind: image
+  source: black-forest-labs/FLUX.1-schnell
+  repo: OpenVINO/FLUX.1-schnell-int4-ov     # ~9.3 GB, Intel CPU/iGPU
+  steps: 4
+  license: Apache-2.0
+  commercial_ok: true
+
+flux-schnell:
+  kind: image
+  source: black-forest-labs/FLUX.1-schnell  # bulut worker (diffusers, CUDA)
+  steps: 4
+  license: Apache-2.0
+  commercial_ok: true
+  remote_only: true
+
+sdxl-base-ov-int8:
+  kind: image
+  source: stabilityai/stable-diffusion-xl-base-1.0
+  repo: OpenVINO/stable-diffusion-xl-base-1.0-int8-ov   # ~3.5 GB, daha hafif ama daha yavaş
+  steps: 25
+  license: CreativeML-OpenRAIL++-M
+  commercial_ok: true
+  note: Ticari kullanıma izin verir; lisanstaki kullanım kısıtlamalarına uyulmalı
+
+z-image-turbo:
+  kind: image
+  source: Tongyi-MAI/Z-Image-Turbo
+  steps: 8
+  license: Apache-2.0
+  commercial_ok: true
+  remote_only: true
+
+minimax-h3-image:
+  kind: image
+  source: MiniMaxAI/MiniMax-H3-Image
+  license: MiniMax-H3-Image-Community
+  commercial_ok: false
+  remote_only: true                 # 33.1B DiT, ~69 GB BF16; yalnızca bulut GPU worker'da çalışır
+  note: >-
+    AB, Birleşik Krallık, ABD ve Güney Kore lisans kapsamı dışında (çıktıların oralarda
+    kullanılması/gösterilmesi dahil). Başkalarına hizmet (SaaS/API) sunmak veya yıllık
+    1M USD üstü gelir için MiniMax'tan yazılı izin gerekir. Ticari üründe arayüzde
+    "MiniMax-H3-Image" ibaresi gösterilmeli. Çıktılar başka model eğitmek için kullanılamaz.
+
+sdxl-turbo:
+  kind: image
+  source: stabilityai/sdxl-turbo
+  license: SAI-NC-Research
+  commercial_ok: false
+
+depth-anything-v2-small:
+  kind: depth
+  source: depth-anything/Depth-Anything-V2-Small-hf
+  license: Apache-2.0
+  commercial_ok: true
+
+depth-anything-v2-large:
+  kind: depth
+  source: depth-anything/Depth-Anything-V2-Large-hf
+  license: CC-BY-NC-4.0
+  commercial_ok: false
+
+wan2.1-t2v-1.3b:
+  kind: video
+  source: Wan-AI/Wan2.1-T2V-1.3B-Diffusers
+  steps: 30
+  license: Apache-2.0
+  commercial_ok: true
+
+wan2.2-ti2v-5b:
+  kind: video
+  source: Wan-AI/Wan2.2-TI2V-5B-Diffusers
+  license: Apache-2.0
+  commercial_ok: true
+
+ltx-video:
+  kind: video
+  source: Lightricks/LTX-Video
+  license: LTXV-Open-Weights
+  commercial_ok: false              # gelir eşiği içeren özel lisans; kullanmadan önce kontrol edin
+
+chatterbox-multilingual:
+  kind: tts
+  source: ResembleAI/chatterbox
+  license: MIT
+  commercial_ok: true
+
+piper-tr:
+  kind: tts
+  source: rhasspy/piper-voices/tr/tr_TR
+  license: MIT (kod) / ses başına değişir
+  commercial_ok: true
+  note: Seçilen sesin model kartındaki lisansı ayrıca kontrol edilmeli
+
+xtts-v2:
+  kind: tts
+  source: coqui/XTTS-v2
+  license: CPML
+  commercial_ok: false
+
+ace-step-1.5:
+  kind: music
+  source: ACE-Step/Ace-Step1.5
+  license: MIT
+  commercial_ok: true
+  note: Yerel müzik üretimi (tools/ACE-Step-1.5, scripts/setup_music.ps1). Turbo DiT, 8 adım, Intel XPU/CUDA/CPU.
+
+ace-step:
+  kind: music
+  source: ACE-Step/ACE-Step-v1-3.5B
+  license: Apache-2.0
+  commercial_ok: true
+
+musicgen:
+  kind: music
+  source: facebook/musicgen-small
+  license: CC-BY-NC-4.0
+  commercial_ok: false

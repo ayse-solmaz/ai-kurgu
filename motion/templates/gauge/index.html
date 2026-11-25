@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../base.css">
+<style>
+  .card { width: 88vw; padding: 4.6vw 5.5vw; display: flex; align-items: center; gap: 6vw; }
+  .thermo { position: relative; width: 13vw; height: 52vw; flex: none; }
+  .tube { position: absolute; left: 3.5vw; top: 0; width: 6vw; height: 42vw; border-radius: 3vw; background: rgba(255,255,255,.1); border: .3vw solid rgba(255,255,255,.22); overflow: hidden; }
+  .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0%; border-radius: 3vw;
+          background: linear-gradient(0deg, var(--cool), var(--accent) 60%, var(--danger)); }
+  .bulb { position: absolute; left: 0; bottom: 0; width: 13vw; height: 13vw; border-radius: 50%; border: .3vw solid rgba(255,255,255,.22);
+          background: radial-gradient(circle at 35% 30%, #ffd0d6, var(--danger) 55%, #9e1f33); box-shadow: 0 0 5vw color-mix(in srgb, var(--danger) 60%, transparent); }
+  .tick { position: absolute; left: 10.5vw; width: 4vw; height: .4vw; background: rgba(255,255,255,.45); }
+  .thr { position: absolute; left: -2vw; width: 17vw; height: .7vw; border-radius: 1vw; background: var(--danger); box-shadow: 0 0 2vw var(--danger); }
+  .info { flex: 1; }
+  .val { font: 800 17vw/0.95 "Montserrat"; white-space: nowrap; }
+  .val.hot { color: var(--danger); text-shadow: 0 0 3vw color-mix(in srgb, var(--danger) 60%, transparent); }
+  .label { font: 700 5vw/1.2 "Inter"; margin-top: 2vw; color: rgba(255,255,255,.92); }
+  .chip { display: inline-block; margin-top: 2.6vw; padding: 1vw 2.8vw; border-radius: 99vw; background: color-mix(in srgb, var(--danger) 25%, transparent);
+          border: .2vw solid var(--danger); color: #ffd6dc; font: 800 3.4vw "Montserrat"; letter-spacing: .08em; }
+  /* apple */
+  [data-theme="apple"] .val { font: 700 16vw/0.95 "Inter Tight"; letter-spacing: -0.05em; }
+  [data-theme="apple"] .val.hot { text-shadow: none; }
+  [data-theme="apple"] .bulb { box-shadow: none; background: var(--danger); border-color: rgba(255,255,255,.25); }
+  [data-theme="apple"] .thr { box-shadow: none; }
+  [data-theme="apple"] .label { color: var(--label-2); font-weight: 600; }
+  [data-theme="apple"] .chip { font: 600 3.4vw "Inter"; letter-spacing: 0; border: none; color: #fff; background: color-mix(in srgb, var(--danger) 30%, transparent); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../../runtime.js"></script>
+<script>
+  const P = K.params;
+  const lo = Number(P.min ?? 35), hi = Number(P.max ?? 42), v = Number(P.value);
+  const thr = P.threshold != null && P.threshold !== "" ? Number(P.threshold) : null;
+  const unit = P.unit ?? "°C";
+  const frac = (x) => Math.min(Math.max((x - lo) / (hi - lo || 1), 0), 1);
+  const slot = K.el("div", `card-slot pos-${P.position || "top"}`);
+  const card = K.at(K.el("div", "glass card a-rise"), 0);
+  const th = K.el("div", "thermo");
+  const tube = K.el("div", "tube"); const fill = K.el("div", "fill"); tube.appendChild(fill); th.appendChild(tube);
+  for (let i = 0; i <= 4; i++) { const t = K.el("div", "tick"); t.style.top = `${2 + i * 9.5}vw`; th.appendChild(t); }
+  if (thr != null) { const m = K.at(K.el("div", "thr a-fade"), 0.4); m.style.top = `${42 - frac(thr) * 40}vw`; th.appendChild(m); }
+  th.appendChild(K.el("div", "bulb"));
+  card.appendChild(th);
+  const info = K.el("div", "info");
+  const val = K.el("div", "val"); info.appendChild(val);
+  info.appendChild(K.at(K.el("div", "label a-fade", K.esc(P.label)), 0.5));
+  const chip = thr != null && v >= thr ? K.at(K.el("div", "chip a-pop", "TEHLİKE"), 1.45) : null;
+  if (chip) info.appendChild(chip);
+  card.appendChild(info);
+  slot.appendChild(card);
+  document.getElementById("stage").appendChild(slot);
+  const decimals = (String(P.value).split(/[.,]/)[1] || "").length;
+  K.onFrame((t) => {
+    const x = K.ease((t - 0.3) / 1.3);
+    const cur = lo + (v - lo) * x;
+    fill.style.height = `${frac(cur) * 100}%`;
+    val.textContent = `${cur.toLocaleString("tr-TR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}${unit}`;
+    val.classList.toggle("hot", thr != null && cur >= thr);
+  });
+  val.textContent = `${lo}${unit}`;
+</script>
+</body>
+</html>

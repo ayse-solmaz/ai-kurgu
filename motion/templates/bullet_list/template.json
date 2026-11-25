@@ -1,0 +1,27 @@
+{
+  "id": "bullet_list",
+  "name": "Madde listesi",
+  "description": "Konuşmacı birkaç şeyi sıraladığında (ör. 'titreriz, kaslar ısı üretir, damarlar büzülür' veya 'hamileler, yaşlılar ve bağışıklığı zayıf olanlar') maddeleri ikonlarla tek tek beliren bir kartta gösterir.",
+  "layout": "card",
+  "duration": { "default": 4.2, "min": 3.0, "max": 6.0 },
+  "params": {
+    "title": { "type": "string", "required": true, "max": 32, "description": "Listenin kısa başlığı" },
+    "items": {
+      "type": "list", "required": true, "min": 2, "max": 4,
+      "item": {
+        "icon": { "type": "icon", "required": true, "description": "İngilizce ikon anahtar kelimesi" },
+        "text": { "type": "string", "required": true, "max": 30, "description": "Madde metni, kısa" }
+      }
+    },
+    "position": { "type": "enum", "values": ["top", "center", "bottom"], "default": "top" }
+  },
+  "example": {
+    "title": "Risk grupları",
+    "items": [
+      { "icon": "pregnant woman", "text": "Hamileler" },
+      { "icon": "old woman", "text": "Yaşlılar" },
+      { "icon": "shield", "text": "Bağışıklığı zayıf olanlar" }
+    ],
+    "position": "top"
+  }
+}

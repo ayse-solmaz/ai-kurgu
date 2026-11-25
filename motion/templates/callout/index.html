@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../base.css">
+<style>
+  .card { width: 88vw; padding: 4.6vw 5vw 4.6vw 7vw; display: flex; align-items: center; gap: 5vw; }
+  .card::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2vw; background: var(--c); }
+  .ic { flex: none; width: 20vw; height: 20vw; border-radius: 50%; display: grid; place-items: center;
+        background: color-mix(in srgb, var(--c) 22%, transparent); border: .35vw solid var(--c); }
+  .ic .icon { width: 12.5vw; height: 12.5vw; }
+  .ic.shake { animation: shake .55s ease-in-out calc(var(--d) + .55s) 2; }
+  @keyframes shake { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-10deg); } 75% { transform: rotate(10deg); } }
+  .t { font: 800 6.4vw/1.05 "Montserrat"; color: var(--c2); }
+  .x { font: 700 4.9vw/1.25 "Inter"; margin-top: 1.6vw; color: rgba(255,255,255,.93); }
+  /* apple */
+  [data-theme="apple"] .card::after { display: none; }
+  [data-theme="apple"] .card { padding-left: 5vw; }
+  [data-theme="apple"] .ic { border: none; border-radius: 5.6vw; background: color-mix(in srgb, var(--c) 26%, transparent); }
+  [data-theme="apple"] .t { font: 700 6.2vw/1.08 "Inter Tight"; letter-spacing: -0.03em; }
+  [data-theme="apple"] .x { color: var(--label-2); font-weight: 500; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../../runtime.js"></script>
+<script>
+  const P = K.params;
+  const apple = document.documentElement.dataset.theme === "apple";
+  const colors = apple
+    ? { warning: ["#FF453A", "#FF9F99"], info: ["#0A84FF", "#8EC5FF"], tip: ["#30D158", "#98F0AE"] }
+    : { warning: ["#ff5d73", "#ffc2cb"], info: ["#4cc9f0", "#c6efff"], tip: ["#2ee6a6", "#c9fbe9"] };
+  const [c, c2] = colors[P.variant] || colors.info;
+  document.documentElement.style.setProperty("--c", c);
+  document.documentElement.style.setProperty("--c2", c2);
+  const slot = K.el("div", `card-slot pos-${P.position || "top"}`);
+  const card = K.at(K.el("div", "glass card a-slide-l"), 0);
+  const ic = K.at(K.el("div", `ic a-pop${P.variant === "warning" ? " shake" : ""}`), 0.15);
+  ic.appendChild(K.icon(P.icon_svg || ""));
+  card.appendChild(ic);
+  const body = K.el("div");
+  body.appendChild(K.at(K.el("div", "t a-rise", K.esc(P.title)), 0.3));
+  body.appendChild(K.at(K.el("div", "x a-rise", K.esc(P.text)), 0.45));
+  card.appendChild(body);
+  slot.appendChild(card);
+  document.getElementById("stage").appendChild(slot);
+</script>
+</body>
+</html>

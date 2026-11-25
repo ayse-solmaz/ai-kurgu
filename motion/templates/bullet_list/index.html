@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../base.css">
+<style>
+  .card { width: 88vw; padding: 5vw 5vw 3.5vw; }
+  .card .title { font-size: 7vw; margin-bottom: 3vw; display: flex; align-items: center; gap: 2.4vw; }
+  .card .title::before { content: ""; width: 1.4vw; height: 7vw; border-radius: 1vw; background: linear-gradient(180deg, var(--accent), var(--cool)); }
+  .item { display: flex; align-items: center; gap: 4vw; padding: 2.4vw 0; border-top: .15vw solid rgba(255,255,255,.08); }
+  .item .icon { width: 12vw; height: 12vw; flex: none; padding: 1.6vw; border-radius: 3vw; background: rgba(255,255,255,.07); }
+  .item .txt { font: 700 5.4vw/1.15 "Inter"; }
+  .check { margin-left: auto; width: 6vw; height: 6vw; border-radius: 50%; background: var(--ok); color: #05261a; display: grid; place-items: center; font: 800 3.6vw "Montserrat"; }
+  /* apple */
+  [data-theme="apple"] .card .title::before { display: none; }
+  [data-theme="apple"] .item { border-top-color: rgba(255,255,255,.12); }
+  [data-theme="apple"] .item .icon { border-radius: 3.4vw; background: rgba(255,255,255,.1); }
+  [data-theme="apple"] .item .txt { font-weight: 600; }
+  [data-theme="apple"] .check { color: #fff; font: 700 3.4vw "Inter"; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="../../runtime.js"></script>
+<script>
+  const P = K.params;
+  const items = (P.items || []).slice(0, 4);
+  const slot = K.el("div", `card-slot pos-${P.position || "top"}`);
+  const card = K.at(K.el("div", "glass card a-rise"), 0);
+  card.appendChild(K.at(K.el("div", "title a-fade", K.esc(P.title)), 0.12));
+  const gap = Math.min(0.75, (K.duration - 1.5) / Math.max(items.length, 1));
+  items.forEach((it, i) => {
+    const d = 0.45 + i * gap;
+    const row = K.at(K.el("div", "item a-slide-l"), d);
+    row.appendChild(K.icon(it.icon_svg));
+    row.appendChild(K.el("div", "txt", K.esc(it.text)));
+    row.appendChild(K.at(K.el("div", "check a-pop", "✓"), d + 0.25));
+    card.appendChild(row);
+  });
+  slot.appendChild(card);
+  document.getElementById("stage").appendChild(slot);
+</script>
+</body>
+</html>

@@ -229,6 +229,40 @@ def junk_reason(tpl, params: dict, sents: list, sentence_id: int) -> str | None:
     return None
 
 
+def _short_label(*cands) -> str | None:
+    """Kurtarma kartı için 1-3 kelimelik, yarım kalmamış etiket."""
+    for c in cands:
+        if not isinstance(c, str):
+            continue
+        words = re.sub(r"[^\wÇĞİÖŞÜçğıöşü'\- ]", " ", c).split()
+        if 1 <= len(words) <= 3 and words[-1].lower() not in _DANGLING_END and len(" ".join(words)) <= 28:
+            return " ".join(words)
+    return None
+
+
+def salvage_pick(pick: MotionPick, tpls: dict) -> MotionPick | None:
+    """Kalite kapısından geçemeyen bir öneriyi (uydurma sayı, sırası olmayan süreç, parça liste) atmak yerine
+    aynı andaki kavramı vurgulayan sade bir ikon kartına çevirir. İngilizce ikon anahtarı ve konuşmadan
+    alınmış kısa bir etiket yoksa kurtarılmaz."""
+    if "icon_pop" not in tpls or pick.template == "icon_pop":
+        return None
+    prm = pick.params or {}
+    icon = prm.get("icon") if isinstance(prm.get("icon"), str) else None
+    if not icon:  # liste şablonları (süreç, zaman çizelgesi, madde): ilk öğenin ikonu
+        for v in prm.values():
+            if isinstance(v, list):
+                icon = next((it.get("icon") for it in v if isinstance(it, dict) and isinstance(it.get("icon"), str)), None)
+                if icon:
+                    break
+    if not icon or not re.fullmatch(r"[a-z][a-z \-]{1,30}", icon.strip().lower()):
+        return None
+    label = _short_label(prm.get("label"), prm.get("title"), pick.phrase)
+    if not label:
+        return None
+    return MotionPick(sentence_id=pick.sentence_id, phrase=pick.phrase, template="icon_pop",
+                      params={"icon": icon.strip().lower(), "label": label})
+
+
 def place_picks(tl: Timeline, tr: Transcript, sents: list, picks_in: list[MotionPick], tpls: dict,
                 start_guard: float, report: dict | None = None, max_full: int = 2, max_same: int = 2,
                 full_guard: float = 8.0) -> list[MotionItem]:
@@ -257,20 +291,36 @@ def place_picks(tl: Timeline, tr: Transcript, sents: list, picks_in: list[Motion
     used: dict[str, int] = {}
     for m in tl.motions:
         used[m.template] = used.get(m.template, 0) + 1
-    for pick in picks:
+    queue = list(picks)
+    depth: dict[int, int] = {}  # kurtarma/kaydırma derinliği (en fazla 2): sonsuz döngü olmaz
+
+    def retry(new: MotionPick | None, why: str, parent: MotionPick):
+        d = depth.get(id(parent), 0) + 1
+        if new is not None and d <= 2:
+            depth[id(new)] = d
+            queue.append(new)
+            report is not None and report.setdefault("salvaged", []).append(f"{why} -> {new.template}")
+
+    while queue:
+        pick = queue.pop(0)
+        second = depth.get(id(pick), 0) >= 2
         tpl = tpls.get(pick.template)
         if not tpl or pick.sentence_id not in by_id:
             rejected.append(f"{pick.template}: bilinmeyen şablon veya cümle")
             continue
+        orig = pick
         pick, note = ground_pick(pick, tpl, sents, tpls)
         if note:
             rejected.append(note) if pick is None else (report is not None and report.setdefault("grounded", []).append(note))
         if pick is None:
+            if not second:
+                retry(salvage_pick(orig, tpls), note or "doğrulanamadı", orig)
             continue
         tpl = tpls.get(pick.template)
         s = by_id.get(pick.sentence_id)
-        if used.get(tpl.id, 0) >= max_same:
-            rejected.append(f"{tpl.id}: aynı şablon sınırı ({max_same})")
+        same_limit = max_same + (1 if tpl.id == "icon_pop" else 0)  # hafif ikon kartı bir kez daha tekrarlanabilir
+        if used.get(tpl.id, 0) >= same_limit:
+            rejected.append(f"{tpl.id}: aynı şablon sınırı ({same_limit})")
             continue
         raw = dict(pick.params or {})
         if tpl.id == "big_number" and re.search(r"[A-Za-zÇĞİÖŞÜçğıöşü]", str(raw.get("prefix", ""))):
@@ -284,9 +334,13 @@ def place_picks(tl: Timeline, tr: Transcript, sents: list, picks_in: list[Motion
         bad = junk_reason(tpl, params, sents, s.id)
         if bad:
             rejected.append(bad)
+            if not second:
+                retry(salvage_pick(pick, tpls), bad, pick)
             continue
         if tpl.layout == "full" and full_count >= max_full:
             rejected.append(f"{tpl.id}: tam ekran sınırı ({max_full})")
+            if not second:
+                retry(salvage_pick(pick, tpls), "tam ekran sınırı", pick)
             continue
         ws, _ = locate_phrase(tr, s, pick.phrase)
         item = MotionItem(id=tl.next_id("m"), anchor=Anchor(word_start=ws, word_end=ws), template=tpl.id,
@@ -297,6 +351,8 @@ def place_picks(tl: Timeline, tr: Transcript, sents: list, picks_in: list[Motion
             continue
         if tpl.layout == "full" and span[0] < full_guard:
             rejected.append(f"{tpl.id}: açılışta tam ekran (konuşmacı görünmeli)")
+            if not second:  # açılışta konuşmacı görünmeli: tam ekran yerine küçük kart
+                retry(salvage_pick(pick, tpls), "açılışta tam ekran", pick)
             continue
         if any(_overlaps(span, o) for o in taken_spans):
             rejected.append(f"{tpl.id}: başka animasyonla çakışıyor")
@@ -308,6 +364,12 @@ def place_picks(tl: Timeline, tr: Transcript, sents: list, picks_in: list[Motion
                 report is not None and report.setdefault("replaced_brolls", []).extend(b.id for b in clash)
             else:
                 rejected.append(f"{tpl.id}: b-roll ile çakışıyor")
+                if not second:  # komşu cümleye kaydırmayı dene (b-roll'un hemen öncesi/sonrası)
+                    for nb in (s.id + 1, s.id - 1):
+                        if nb in by_id:
+                            phrase = " ".join(by_id[nb].text.split()[:3])
+                            retry(pick.model_copy(update={"sentence_id": nb, "phrase": phrase}), "b-roll çakışması", pick)
+                            break
                 continue
         tl.motions.append(item)
         taken_spans.append(span)

@@ -235,7 +235,9 @@ def render(template_id: str, params: dict, duration: float, out_dir: Path, width
     duration = min(max(duration or dflt, lo), hi)
     params = validate_params(tpl, params)
     root = motion_root()
-    key = hashlib.sha1(json.dumps([template_id, params, round(duration, 2), width, height, fps, theme,
+    # ikonlar önce çözülür ve anahtara girer: ikon seçimi değişince (ör. marka logosu filtresi) önbellek tazelenir
+    full, used = _attach_icons(tpl, params, theme)
+    key = hashlib.sha1(json.dumps([template_id, params, used, round(duration, 2), width, height, fps, theme,
                                    (tpl.dir / "index.html").stat().st_mtime, (root / "base.css").stat().st_mtime,
                                    (root / "runtime.js").stat().st_mtime], ensure_ascii=False, sort_keys=True)
                        .encode("utf-8")).hexdigest()[:14]
@@ -244,9 +246,8 @@ def render(template_id: str, params: dict, duration: float, out_dir: Path, width
     webm = out_dir / f"mg_{template_id}_{key}.webm"
     if mov.exists() and (webm.exists() or not preview):
         return {"mov": mov, "webm": webm if webm.exists() else None, "params": params, "duration": duration,
-                "icons": [], "layout": tpl.layout}
+                "icons": used, "layout": tpl.layout}
 
-    full, used = _attach_icons(tpl, params, theme)
     work = out_dir / f"_work_{key}"
     shutil.rmtree(work, ignore_errors=True)
     frames = work / "frames"
@@ -406,4 +407,28 @@ def place_cards_off_face(project, tl) -> dict:
             m.params = {**m.params, "position": pos}
             m.asset = None  # yeniden render
             moved[m.id] = pos
+    # ekran yazıları (hook, pop): altyazı bölgesine (alt) inmeden üst veya orta, yüzle en az çakışan
+    for t in tl.texts:
+        if t.style not in ("hook", "pop"):
+            continue
+        pos = best_text_position(band)
+        if pos and t.position != pos:
+            t.position = pos
+            moved[t.id] = pos
     return {"band": band, "moved": moved}
+
+
+# ekran yazılarının yaklaşık dikey aralıkları (captions_ass: hook ve pop yazıları)
+TEXT_SLOTS = {"top": (0.04, 0.30), "center": (0.38, 0.54)}
+
+
+def best_text_position(band: dict | None) -> str | None:
+    if not band or not band.get("found"):
+        return None
+    ft, fb = band["top"] - 0.02, band["bottom"] + 0.02
+
+    def overlap(p):
+        a, b = TEXT_SLOTS[p]
+        return max(0.0, min(b, fb) - max(a, ft))
+
+    return min(("top", "center"), key=lambda p: (round(overlap(p), 2), p != "top"))

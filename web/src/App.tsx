@@ -100,6 +100,10 @@ export default function App() {
     setSrcT(s);
   }, []);
   const busy = !!job;
+  // masaüstü uygulamasında: iş sürerken bilgisayarın uykuya geçmesini engelle
+  useEffect(() => {
+    (window as any).kurgu?.keepAwake?.(busy);
+  }, [busy]);
 
   const saveTimeline = async (tl: Timeline, note: string) => {
     if (!current) return;

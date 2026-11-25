@@ -16,6 +16,7 @@ sırayla ve kısa çıktılarla çalışır.
 
 from __future__ import annotations
 
+import json
 import re
 from typing import Callable, Literal
 
@@ -306,6 +307,20 @@ def _fill_animation_params(beats: list, sents: list, rep: Progress) -> list:
     return picks
 
 
+_ANIM_MOMENT = re.compile(
+    r"\d|yüzde|kat |önce|sonra|ardından|adım|aşama|birinci|ikinci|üçüncü|dikkat|tehlike|risk|önemli|"
+    r"yani|demek ki|aslında|sorun|çözüm|neden|nasıl|fark|karşı|milyon|milyar|bin ", re.I)
+
+
+def motion_target(sents, duration: float, vertical: bool) -> int:
+    """Videoya kaç animasyon yakışır: süreye göre bir taban + konuşmadaki 'görselleştirilebilir an' sayısı
+    (sayı, süreç, uyarı, karşılaştırma, açıklama). Üst sınır: dikeyde ~8 sn'de, yatayda ~15 sn'de bir."""
+    base = round(duration / (15 if vertical else 30))
+    moments = sum(1 for x in sents if _ANIM_MOMENT.search(" " + x.text + " "))
+    cap = max(2, int(duration / (8 if vertical else 15)))
+    return max(2, min(cap, max(base, moments // 2)))
+
+
 def run_director(project: Project, style: str | None = None, progress: Progress | None = None,
                  assets: bool = True, review: bool = True) -> tuple[Timeline, dict]:
     """Ölçüm araçları -> video profili -> senarist (brif + sahne planı) -> uygulayıcı ajanlar -> varlıklar."""
@@ -464,7 +479,8 @@ def run_director(project: Project, style: str | None = None, progress: Progress 
         except Exception as e:  # animasyon opsiyonel; kurgu yine de tamamlansın
             report["motions_error"] = str(e)[:300]
     # güvenlik ağı: senaryodan yeterli animasyon çıkmadıysa animasyon tasarımcısı boş dilimlere kendisi seçer
-    target = max(2, round(tl2.output_duration() / 25))
+    target = motion_target(sents, tl2.output_duration(), vertical)
+    report["motion_target"] = target
     if len(tl2.motions) < target:
         try:
             from .animator import plan_motions
@@ -526,4 +542,9 @@ def run_director(project: Project, style: str | None = None, progress: Progress 
     project.save_timeline(tl2, note=f"Senaryo uygulandı: {len(tl2.brolls)} b-roll, {len(tl2.motions)} animasyon"
                                    + (", müzik" if tl2.music else ""))
     rep("plan", 1.0, f"{len(beats)} sahne · {len(tl2.brolls)} b-roll · {len(tl2.motions)} animasyon")
+    # neyin neden reddedildiği/kurtarıldığı sonradan incelenebilsin
+    try:
+        project.save_analysis("director_report", json.loads(json.dumps(report, ensure_ascii=False, default=str)))
+    except Exception:
+        pass
     return tl2, report

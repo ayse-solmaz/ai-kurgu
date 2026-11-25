@@ -236,6 +236,8 @@ def _text_events(texts: list[OutText], w: int, h: int, upper: bool) -> list[str]
         s, e = ass_time(t.start), ass_time(t.end)
         if t.style == "hook":
             fx = "{\\fad(100,200)\\fscx60\\fscy60\\t(0,160,\\fscx106\\fscy106)\\t(160,240,\\fscx100\\fscy100)}"
+            if t.position == "center":  # yüz üstteyse hook ortaya iner (altyazı bölgesine değil)
+                fx = f"{{\\an5\\pos({w // 2},{int(h * 0.46)})}}" + fx
             events.append(f"Dialogue: 2,{s},{e},Hook,,0,0,0,,{fx}{body}")
         elif t.style == "title":
             fx = "{\\fad(250,250)\\blur3\\t(0,250,\\blur0)}"

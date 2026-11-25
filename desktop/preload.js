@@ -4,4 +4,5 @@ const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("kurgu", {
   onStatus: (cb) => ipcRenderer.on("status", (_e, data) => cb(data)),
   appInfo: () => ipcRenderer.invoke("app-info"),
+  keepAwake: (on) => ipcRenderer.invoke("keep-awake", !!on),
 });

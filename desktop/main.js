@@ -9,7 +9,7 @@
 // Geliştirme modu (npm start): depo kökündeki kaynaklar ve .venv kullanılır.
 // Kurulu mod: resources/backend içindeki kaynaklar; ortam ve veriler %APPDATA%/AI Kurgu altında.
 
-const { app, BrowserWindow, Menu, dialog, shell, ipcMain } = require("electron");
+const { app, BrowserWindow, Menu, dialog, shell, ipcMain, powerSaveBlocker } = require("electron");
 const { spawn, execFile } = require("child_process");
 const fs = require("fs");
 const net = require("net");
@@ -401,4 +401,14 @@ if (renderArg !== -1) {
   app.on("window-all-closed", () => app.quit());
 }
 
+// Uzun kurgu/render işleri sürerken bilgisayar uykuya geçmesin (ekran kapanabilir, işlem durmaz)
+let awakeId = null;
+ipcMain.handle("keep-awake", (_e, on) => {
+  if (on && awakeId === null) awakeId = powerSaveBlocker.start("prevent-app-suspension");
+  if (!on && awakeId !== null) {
+    powerSaveBlocker.stop(awakeId);
+    awakeId = null;
+  }
+  return awakeId !== null;
+});
 ipcMain.handle("app-info", () => ({ version: app.getVersion(), packaged: isPackaged, dataRoot }));

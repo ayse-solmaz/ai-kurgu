@@ -65,10 +65,12 @@ konuşmacılı, 3-5 dakikalık iki video üzerinde tam otomatik kurgu (Shorts ve
 **Zayıf noktalar:**
 
 - **Kalite tutarlı değil.** Sonuç büyük ölçüde yerel LLM'e bağlı. 30B modelle 58 saniyelik bir Shorts'ta
-  3 b-roll ve 3 animasyon çıktı; temiz ama sıradan. 8B modelde animasyon ve b-roll'ların önemli kısmı kalite
+  3 b-roll ve 3 animasyon çıktı; temiz ama sıradan. Kalite kapısından geçemeyen öneriler artık atılmak yerine
+  sade ikon kartlarına çevriliyor, yine de ikon seçimi bazen konuyla zayıf eşleşiyor. 8B modelde animasyon ve b-roll'ların önemli kısmı kalite
   kapılarından elenip video boş kalıyordu.
 - **Yavaş.** 30B model ekran kartsız bilgisayarda işlemcide çalışıyor (~12 token/sn). 5 dakikalık bir videonun
-  tam otomatik kurgusu ~25 dakika sürüyor.
+  tam otomatik kurgusu ~15-25 dakika sürüyor. Masaüstü uygulaması iş sürerken bilgisayarın uykuya
+  geçmesini engeller (uyku, işi saatlerce durdurabiliyordu).
 - **Bellek.** Qwen3 30B-A3B ~18.6 GB. 16 GB RAM'li bilgisayarda çalışmaz; uygulama o zaman qwen3:8b'ye düşer.
 - **Tekrar çekim tespiti kural tabanlı** ve Türkçe konuşma kalıplarına göre ayarlandı. Başka dillerde veya
   farklı konuşma tarzlarında kaçırabilir ya da fazla kesebilir.
@@ -165,16 +167,19 @@ Tüm bileşenlerin listesi: [LICENSES.md](LICENSES.md).
 
 Öncelik sırasına yakın:
 
-- [ ] **Kesimleri uygulamadan önce göster:** bulunan tekrar çekim ve dolguları transkriptte işaretleyip tek tıkla onay/geri alma.
+- [x] **Kesimleri gözden geçirme:** Transkript → Kesimler listesi; her tekrar çekim/dolgu kesimi nedeniyle gösterilir, tek tıkla geri alınır.
+- [ ] **Kesimleri uygulamadan önce onaylatmak:** şu an kesimler önce uygulanıyor, sonra geri alınabiliyor; isteğe bağlı "önce sor" modu.
 - [ ] **Senaryo kalitesi:** kullanıcının arayüzde yaptığı düzeltmeleri (silinen b-roll, geri alınan kesim, değiştirilen yazı) kaydedip küçük bir modeli (Qwen3 4B/8B) bu dar işler için LoRA ile ince ayarlamak.
-- [ ] **Daha zengin ama anlamlı animasyon:** yoğunluğu videonun içeriğine göre ayarlamak; şablon kütüphanesini genişletmek.
+- [x] **İçeriğe göre animasyon sayısı:** sayı, süreç, uyarı, karşılaştırma içeren cümlelere göre hedef belirlenir.
+- [ ] **Şablon kütüphanesini genişletmek** (karşılaştırma, harita, alıntı kartı vb.).
 - [ ] **Hız:** senarist çağrılarını azaltmak, analiz sonuçlarını önbelleklemek, uzun videolar için paralel işleme.
-- [ ] **Yazı ve hook yerleşimi:** kartlar yüzden kaçıyor, açılış yazısı ve ekran yazıları henüz kaçmıyor.
+- [x] **Yüzden kaçan yerleşim:** kartlar, açılış yazısı (hook) ve ekran yazıları konuşmacının yüzünün olmadığı bölgeye yerleşir.
 - [ ] **Diğer diller:** dolgu ve tekrar çekim kuralları şu an Türkçe odaklı.
 - [ ] **Platformlar:** Linux ve macOS desteği, NVIDIA/CUDA ve Apple Silicon yolunun test edilmesi.
 - [ ] **Müzik:** Intel iGPU'da ACE-Step (sürücü hatası çözülünce), daha kısa üretim süresi.
 - [ ] **Zaman çizelgesi:** sürükle-bırak ile b-roll/animasyon taşıma ve süre değiştirme.
-- [ ] **Test ve CI:** uçtan uca örnek video testleri, GitHub Actions.
+- [x] **CI:** birim testleri ve arayüz derlemesi her push'ta GitHub Actions'ta çalışır.
+- [ ] **Uçtan uca test:** örnek bir videoyla tam otomatik kurgunun CI'da (küçük modelle) denenmesi.
 
 ## Proje yapısı
 

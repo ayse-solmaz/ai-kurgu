@@ -44,7 +44,7 @@ bölgeye yerleştirilir.
 |---|---|
 | Transkript | faster-whisper large-v3-turbo, kelime kelime zaman damgası |
 | Temizlik | Sessizlik (Silero VAD), "ııı/eee/hmm" dolguları, "ben ben" kekelemeleri, "bir daha / pardon / baştan" ile başlayan tekrar çekimler |
-| Shorts | 9:16, en fazla 60 sn; en iyi bölüm otomatik seçilir. Yüz takipli dikey kadraj (OpenCV YuNet) |
+| Shorts | 9:16, en fazla 60 sn. Uzun videodan hikâyeyi kuran cümleler seçilir (açılış, sorun, çözüm, sonuç; ardışık olmak zorunda değil); önceki cümleye bağlı veya yarım kalan cümleler kodla tamamlanır ya da çıkarılır. Yüz takipli dikey kadraj (OpenCV YuNet) |
 | Senaryo | Video profili (tempo, enerji, tür, ton) + senarist ajanı; sahne başına karar, kodla dengelenen dağılım |
 | B-roll | Yerel FLUX.1-schnell (OpenVINO INT4) + Ken Burns hareketi; isteğe bağlı bulut GPU worker veya Pexels/Pixabay yedeği |
 | Hareketli grafik | HTML/CSS şablonları (süreç adımları, zaman çizelgesi, büyük sayı, termometre, madde listesi, uyarı kartı, kelime vurgusu, ikon) Electron'un Chromium'uyla şeffaf video olarak render edilir. Kendi şablonunu eklemek için: [motion/README.md](motion/README.md) |
@@ -72,6 +72,7 @@ konuşmacılı, 3-5 dakikalık iki video üzerinde tam otomatik kurgu (Shorts ve
   tam otomatik kurgusu ~15-25 dakika sürüyor. Masaüstü uygulaması iş sürerken bilgisayarın uykuya
   geçmesini engeller (uyku, işi saatlerce durdurabiliyordu).
 - **Bellek.** Qwen3 30B-A3B ~18.6 GB. 16 GB RAM'li bilgisayarda çalışmaz; uygulama o zaman qwen3:8b'ye düşer.
+- **Shorts seçimi LLM'e bağlı:** cümleler arası anlam bağı ("bu sorun" gibi önceki bir cümleye gönderme) her zaman yakalanmıyor.
 - **Tekrar çekim tespiti kural tabanlı** ve Türkçe konuşma kalıplarına göre ayarlandı. Başka dillerde veya
   farklı konuşma tarzlarında kaçırabilir ya da fazla kesebilir.
 - **Müzik üretimi yavaş:** Intel iGPU'da (XPU) PyTorch sürücü hatası nedeniyle ACE-Step işlemcide çalışıyor,
@@ -168,6 +169,8 @@ Tüm bileşenlerin listesi: [LICENSES.md](LICENSES.md).
 Öncelik sırasına yakın:
 
 - [x] **Kesimleri gözden geçirme:** Transkript → Kesimler listesi; her tekrar çekim/dolgu kesimi nedeniyle gösterilir, tek tıkla geri alınır.
+- [x] **Doğru anda animasyon:** kartlar yazdıkları kelimelerin, b-roll'lar etiketlendikleri ifadenin konuşmada GERÇEKTEN söylendiği ana bağlanır.
+- [x] **Shorts hikâye seçimi:** tek ardışık bölüm yerine hikâyeyi kuran cümleler; video hazırlık cümlesinde bitmez.
 - [ ] **Kesimleri uygulamadan önce onaylatmak:** şu an kesimler önce uygulanıyor, sonra geri alınabiliyor; isteğe bağlı "önce sor" modu.
 - [ ] **Senaryo kalitesi:** kullanıcının arayüzde yaptığı düzeltmeleri (silinen b-roll, geri alınan kesim, değiştirilen yazı) kaydedip küçük bir modeli (Qwen3 4B/8B) bu dar işler için LoRA ile ince ayarlamak.
 - [x] **İçeriğe göre animasyon sayısı:** sayı, süreç, uyarı, karşılaştırma içeren cümlelere göre hedef belirlenir.

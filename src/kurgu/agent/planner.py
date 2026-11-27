@@ -7,6 +7,7 @@ işaretleyebilir. Yoğunluk, aralık ve süre kuralları kodla uygulanır (model
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from typing import Callable, Literal
@@ -103,6 +104,13 @@ class Highlight(BaseModel):
     reason: str
 
 
+class StoryPick(BaseModel):
+    """Kısa video için seçilen cümleler: ardışık olmak zorunda değil, hikâyenin tamamı (giriş-sorun-çözüm-sonuç)."""
+
+    sentence_ids: list[int] = Field(description="Kısa videoya girecek cümle numaraları, kronolojik sırada")
+    reason: str = Field(description="Bu cümlelerin nasıl bir hikâye kurduğu, tek cümle")
+
+
 # --------------------------------------------------------------------------- transkript görünümü
 
 
@@ -143,6 +151,33 @@ def chunk_sentences(sents: list[KeptSentence], max_words: int = 900) -> list[lis
     if cur:
         chunks.append(cur)
     return chunks
+
+
+def _phrase_score(tr: Transcript, sent: KeptSentence, phrase: str) -> tuple[float, int, int]:
+    """(benzerlik, başlangıç kelime ID, bitiş kelime ID): ifadenin cümledeki en iyi eşleşmesi."""
+    target = [normalize(t) for t in phrase.split() if normalize(t)]
+    words = [normalize(tr.words[i].text) for i in sent.word_ids]
+    if not target or not words:
+        return 0.0, sent.word_ids[0], sent.word_ids[0]
+    n = min(len(target), len(words))
+    best, best_i = -1.0, 0
+    for i in range(0, len(words) - n + 1):
+        score = SequenceMatcher(None, words[i:i + n], target[:n]).ratio()
+        if score > best:
+            best, best_i = score, i
+    return best, sent.word_ids[best_i], sent.word_ids[best_i + n - 1]
+
+
+def locate_phrase_global(tr: Transcript, sents: list[KeptSentence], sent: KeptSentence, phrase: str) -> tuple[int, int]:
+    """İfade verilen cümlede yoksa (model yanlış cümle numarası verdiyse) tüm transkriptte arar.
+    Görsel, ifadenin GERÇEKTEN söylendiği ana yerleşir."""
+    score, a, b = _phrase_score(tr, sent, phrase)
+    if score >= 0.6 or len(phrase.split()) < 2:
+        return locate_phrase(tr, sent, phrase)
+    best = max(((_phrase_score(tr, x, phrase), x) for x in sents), key=lambda t: t[0][0], default=None)
+    if best and best[0][0] >= 0.6:
+        return best[0][1], best[0][2]
+    return locate_phrase(tr, sent, phrase)
 
 
 def locate_phrase(tr: Transcript, sent: KeptSentence, phrase: str) -> tuple[int, int]:
@@ -256,7 +291,7 @@ def assemble(
                 s = by_id.get(b.sentence_id)
                 if not s:
                     continue
-                ws, we = locate_phrase(tr, s, b.phrase)
+                ws, we = locate_phrase_global(tr, sents, s, b.phrase)
                 we = _extend_to(tr, tm, ws, we, preset.broll.min_len, preset.broll.max_len)
                 span = _anchor_span(tr, tm, ws, we)
                 if span:
@@ -356,10 +391,128 @@ def assemble(
 # --------------------------------------------------------------------------- ana akış
 
 
+STORY_SYSTEM = """Sen kısa video (Shorts/Reels) editörüsün. Uzun bir konuşmadan, tek başına izlendiğinde \
+anlamlı ve merak uyandıran bir hikâye çıkaracaksın. Cümleler ARDIŞIK OLMAK ZORUNDA DEĞİL: aradaki ayrıntıları \
+atlayabilirsin ama seçtiğin cümleler kronolojik sırada okununca akıcı bir anlatı olmalı.
+
+Yapı:
+1. Açılış (hook): merak uyandıran bir soru veya iddia.
+2. Sorun / bağlam: neden önemli.
+3. Çözüm / gelişme: ne yapıldı, nasıl.
+4. Sonuç / vurucu kapanış: ortaya çıkan sonuç, sayı veya etki. Videoyu ASLA bir hazırlık cümlesinde \
+("... bir model geliştirdi.", "şimdi anlatacağım") bitirme; sonucu veya etkiyi gösteren cümleyle bitir.
+
+Kurallar:
+- Toplam süre verilen sınırı aşmamalı (her cümlenin süresi parantez içinde).
+- "Onları", "bu yüzden", "ama" gibi önceki cümleye bağlı başlayan bir cümleyi seçiyorsan bağlı olduğu cümleyi de seç.
+- Sadece JSON döndür."""
+
+
+def _story_keep(tr: Transcript, chosen: list[KeptSentence]) -> list[tuple[float, float]]:
+    """Seçilen cümlelerin tutulacak aralıkları. Nefes payı komşu (seçilmemiş) cümlenin kelimesine taşmaz;
+    yoksa önceki cümlenin son hecesi ("...değil.") videoya sızar."""
+    from ..core.timeline import merge_ranges
+
+    out = []
+    for x in chosen:
+        first, last = x.word_ids[0], x.word_ids[-1]
+        a = tr.words[first].start - 0.15
+        b = tr.words[last].end + 0.25
+        if first > 0:
+            a = max(a, tr.words[first - 1].end + 0.01)
+        if last + 1 < len(tr.words):
+            b = min(b, tr.words[last + 1].start - 0.01)
+        out.append((a, max(b, tr.words[last].end)))
+    return merge_ranges(out)
+
+
+# önceki cümleye bağlı başlayan cümleler: tek başına seçilirlerse anlam kopar
+_DEPENDENT_START = re.compile(
+    r"^(onlar\w*|onu|ona|bunu|buna|bunlar\w*|bu\b|şu\b|aynı zamanda|ayrıca|ama|ancak|fakat|çünkü|bu yüzden|"
+    r"bu nedenle|yani|ise|de\b|da\b|değil|ve\b)", re.I)
+
+
+def _needs_previous(x: KeptSentence) -> bool:
+    t = x.text.strip()
+    return bool(t) and (t[0].islower() or bool(_DEPENDENT_START.match(t)))
+
+
+def _fix_dependencies(chosen: list[KeptSentence], sents: list[KeptSentence], dur, max_s: float) -> list[KeptSentence]:
+    """Bağlı başlayan bir cümlenin öncülü seçilmemişse: süre yetiyorsa öncülü ekle, yetmiyorsa cümleyi çıkar."""
+    order = {x.id: i for i, x in enumerate(sents)}
+    chosen = sorted(chosen, key=lambda x: order[x.id])
+    banned: set[int] = set()  # çıkarılan cümle tekrar eklenmez (ekle-çıkar döngüsü olmaz)
+    changed, rounds = True, 0
+    while changed and rounds < 100:
+        changed, rounds = False, rounds + 1
+        ids = {x.id for x in chosen}
+        for x in list(chosen):
+            if x is chosen[0] and order[x.id] == 0:
+                continue
+            i = order[x.id]
+            # yarım kalan cümle (ASR cümleyi ortadan bölmüş): devamı eklenir ya da cümle çıkarılır
+            nxt = sents[i + 1] if i + 1 < len(sents) else None
+            if not re.search(r"[.!?…]\W*$", x.text.strip()) and nxt and nxt.id not in ids:
+                if nxt.id not in banned and dur(chosen + [nxt]) <= max_s:
+                    chosen = sorted(chosen + [nxt], key=lambda y: order[y.id])
+                elif len(chosen) > 2:
+                    chosen.remove(x)
+                    banned.add(x.id)
+                else:
+                    continue
+                changed = True
+                break
+            prev = sents[i - 1] if i > 0 else None
+            if not _needs_previous(x) or (prev and prev.id in ids):
+                continue
+            if prev and prev.id not in banned and dur(chosen + [prev]) <= max_s:
+                chosen = sorted(chosen + [prev], key=lambda y: order[y.id])
+            elif len(chosen) > 2:
+                chosen.remove(x)
+                banned.add(x.id)
+            else:
+                continue
+            changed = True
+            break
+    return chosen
+
+
+def _story_highlight(tl: Timeline, tr: Transcript, sents: list[KeptSentence], max_s: float) -> list[KeptSentence] | None:
+    """LLM hikâyeyi oluşturan cümleleri seçer (ardışık olmak zorunda değil); kod süreyi ve bütünlüğü denetler."""
+    lines = "\n".join(f"[{x.id}] ({x.out_end - x.out_start:.1f} sn) {x.text}" for x in sents)
+    pick = chat_json([{"role": "system", "content": STORY_SYSTEM},
+                      {"role": "user", "content": f"Süre sınırı: {max_s:.0f} saniye (en az {max_s * 0.7:.0f}).\n\n{lines}"}],
+                     StoryPick, max_tokens=600)
+    by_id = {x.id: x for x in sents}
+    chosen = [by_id[i] for i in sorted(set(pick.sentence_ids)) if i in by_id]
+    if len(chosen) < 2:
+        return None
+    dur = lambda cs: sum(x.out_end - x.out_start for x in cs) + 0.3 * (len(cs) - 1)
+    # sınır aşılırsa: açılış ve kapanış korunur, aradaki en uzun cümleler çıkarılır
+    while dur(chosen) > max_s and len(chosen) > 2:
+        mid = max(chosen[1:-1], key=lambda x: x.out_end - x.out_start)
+        chosen.remove(mid)
+    chosen = _fix_dependencies(chosen, sents, dur, max_s)
+    if dur(chosen) > max_s or dur(chosen) < max_s * 0.45:
+        return None
+    return chosen
+
+
 def _apply_highlight(tl: Timeline, tr: Transcript, sents: list[KeptSentence], preset: Preset) -> list[KeptSentence]:
-    """Shorts süresini aşan videolarda en iyi bölümü seçtirir, kalanı keser."""
+    """Shorts süresini aşan videolarda hikâyeyi kuran cümleleri seçtirir, kalanı keser."""
     if not preset.max_duration or tl.output_duration() <= preset.max_duration:
         return sents
+    try:
+        chosen = _story_highlight(tl, tr, sents, preset.max_duration)
+    except Exception:
+        chosen = None
+    if chosen:
+        from ..core.timeline import complement
+
+        for a, b in complement(_story_keep(tr, chosen), 0.0, tl.source.duration):
+            tl.add_cut(a, b, CutReason.trim, "kısa video hikâyesi dışında")
+        return kept_sentences(tr, tl.time_map())
+    # yedek: tek ardışık aralık
     prompt = (
         f"Bu video {tl.output_duration():.0f} saniye; {preset.max_duration:.0f} saniyelik dikey kısa video "
         "için tek başına anlamlı, en ilgi çekici ardışık cümle aralığını seç (başlangıç ve bitiş cümle numarası).\n\n"

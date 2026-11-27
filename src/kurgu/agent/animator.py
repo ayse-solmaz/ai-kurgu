@@ -229,6 +229,41 @@ def junk_reason(tpl, params: dict, sents: list, sentence_id: int) -> str | None:
     return None
 
 
+def _stem(word: str) -> str:
+    from ..analyze.fillers import normalize
+
+    w = normalize(word)
+    return w[:5] if len(w) > 5 else w  # Türkçe ekler: "kırılgandır" ~ "kırılgan"
+
+
+def _card_texts(template: str, params: dict) -> list[str]:
+    """Kartın ekranda yazdığı ve konuşmada geçmesi beklenen metinler."""
+    out: list[str] = []
+    if template == "word_slam":
+        out += [w for w in params.get("words") or [] if isinstance(w, str)]
+    for k in ("label", "title"):
+        if isinstance(params.get(k), str):
+            out.append(params[k])
+    return out
+
+
+def content_anchor(tr: Transcript, sents: list, texts: list[str]) -> tuple[object, int] | None:
+    """Kartın metninin konuşmada GERÇEKTEN söylendiği yeri bulur: (cümle, kelime kimliği).
+    Kart o kelimeyle birlikte belirir; metin konuşmada yoksa None."""
+    stop = {"ve", "bir", "bu", "da", "de", "ile", "için", "çok", "en", "ne", "mi"}
+    keys = [_stem(t) for txt in texts for t in txt.split() if _stem(t) and _stem(t) not in stop and len(_stem(t)) >= 3]
+    if not keys:
+        return None
+    best, best_score = None, 0.0
+    for sent in sents:
+        stems = [_stem(tr.words[i].text) for i in sent.word_ids]
+        hits = [j for j, st in enumerate(stems) if st in keys]
+        score = len({stems[j] for j in hits}) / len(set(keys))
+        if hits and score > best_score:
+            best, best_score = (sent, sent.word_ids[hits[0]]), score
+    return best if best_score >= 0.5 else None
+
+
 def _short_label(*cands) -> str | None:
     """Kurtarma kartı için 1-3 kelimelik, yarım kalmamış etiket."""
     for c in cands:
@@ -343,6 +378,12 @@ def place_picks(tl: Timeline, tr: Transcript, sents: list, picks_in: list[Motion
                 retry(salvage_pick(pick, tpls), "tam ekran sınırı", pick)
             continue
         ws, _ = locate_phrase(tr, s, pick.phrase)
+        # kart, yazdığı kelimelerin söylendiği ana bağlanır (model başka bir cümle vermiş olsa bile)
+        hit = content_anchor(tr, sents, _card_texts(tpl.id, params))
+        if hit:
+            if hit[0].id != s.id and report is not None:
+                report.setdefault("reanchored", []).append(f"{tpl.id}: cümle {s.id} -> {hit[0].id}")
+            s, ws = hit
         item = MotionItem(id=tl.next_id("m"), anchor=Anchor(word_start=ws, word_end=ws), template=tpl.id,
                           params=params, layout=tpl.layout)
         span = motion_span(item, tl, words, tm)

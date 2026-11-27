@@ -24,7 +24,7 @@ from pydantic import BaseModel, Field
 
 from ..core.config import get_config, load_agents, load_preset
 from ..core.project_store import Project
-from ..core.timeline import Timeline
+from ..core.timeline import CutReason, Timeline
 from .llm import LLMError, chat_json, has_model
 from .planner import (
     ChunkPlan,
@@ -350,7 +350,12 @@ def run_director(project: Project, style: str | None = None, progress: Progress 
     if not sents:
         raise ValueError("Transkriptte kurgulanacak cümle yok.")
 
-    # 1b) Shorts gibi süre sınırlı formatlar: temizlenmiş video sınırı aşıyorsa en iyi bölüm seçilir
+    # 1b) Shorts gibi süre sınırlı formatlar: temizlenmiş video sınırı aşıyorsa en iyi bölüm seçilir.
+    # Yeniden kurguda önceki seçim sıfırlanır (yoksa ilk seçim sonsuza kadar kalır).
+    _hl_notes = ("öne çıkan bölüm dışı", "kısa video hikâyesi dışında", "süre sınırı dışı")
+    if preset.max_duration and any(c.reason == CutReason.trim and c.note in _hl_notes for c in tl.cuts):
+        tl.cuts = [c for c in tl.cuts if not (c.reason == CutReason.trim and c.note in _hl_notes)]
+        sents = kept_sentences(tr, tl.time_map())
     if preset.max_duration and tl.output_duration() > preset.max_duration + 1:
         rep("plan", 0.05, f"En iyi {preset.max_duration:.0f} saniyelik bölüm seçiliyor")
         before = tl.output_duration()

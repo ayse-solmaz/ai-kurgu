@@ -40,3 +40,4 @@ desktop/build-backend/
 .vscode/
 .idea/
 web/tsconfig.tsbuildinfo
+eval/

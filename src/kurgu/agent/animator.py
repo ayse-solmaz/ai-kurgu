@@ -238,30 +238,40 @@ def _stem(word: str) -> str:
 
 def _card_texts(template: str, params: dict) -> list[str]:
     """Kartın ekranda yazdığı ve konuşmada geçmesi beklenen metinler."""
+    # yalnızca konuşmadaki kelimeyi gösteren kartlar: başlıklar (zaman çizelgesi, süreç, uyarı) özet olduğu için
+    # konuşmada birebir geçmeyebilir; onların zamanı cümleden gelir
     out: list[str] = []
     if template == "word_slam":
         out += [w for w in params.get("words") or [] if isinstance(w, str)]
-    for k in ("label", "title"):
-        if isinstance(params.get(k), str):
-            out.append(params[k])
+    if template == "icon_pop" and isinstance(params.get("label"), str):
+        out.append(params["label"])
     return out
 
 
-def content_anchor(tr: Transcript, sents: list, texts: list[str]) -> tuple[object, int] | None:
+def content_anchor(tr: Transcript, sents: list, texts: list[str], near: float | None = None) -> tuple[object, int] | None:
     """Kartın metninin konuşmada GERÇEKTEN söylendiği yeri bulur: (cümle, kelime kimliği).
-    Kart o kelimeyle birlikte belirir; metin konuşmada yoksa None."""
+    Kart o kelimeyle birlikte belirir; metin konuşmada yoksa None. Aynı ifade birden çok yerde geçiyorsa
+    `near` (çıktı saniyesi) verildiğinde ona en yakın olan seçilir."""
     stop = {"ve", "bir", "bu", "da", "de", "ile", "için", "çok", "en", "ne", "mi"}
     keys = [_stem(t) for txt in texts for t in txt.split() if _stem(t) and _stem(t) not in stop and len(_stem(t)) >= 3]
     if not keys:
         return None
-    best, best_score = None, 0.0
+    cands = []
     for sent in sents:
         stems = [_stem(tr.words[i].text) for i in sent.word_ids]
         hits = [j for j, st in enumerate(stems) if st in keys]
         score = len({stems[j] for j in hits}) / len(set(keys))
-        if hits and score > best_score:
-            best, best_score = (sent, sent.word_ids[hits[0]]), score
-    return best if best_score >= 0.5 else None
+        if hits:
+            cands.append((score, sent, sent.word_ids[hits[0]]))
+    if not cands:
+        return None
+    top = max(c[0] for c in cands)
+    if top < 0.5:
+        return None
+    best = [c for c in cands if c[0] >= top - 1e-6]
+    if near is not None and len(best) > 1:
+        best.sort(key=lambda c: abs(c[1].out_start - near))
+    return best[0][1], best[0][2]
 
 
 def _short_label(*cands) -> str | None:
@@ -381,7 +391,7 @@ def place_picks(tl: Timeline, tr: Transcript, sents: list, picks_in: list[Motion
             continue
         ws, _ = locate_phrase(tr, s, pick.phrase)
         # kart, yazdığı kelimelerin söylendiği ana bağlanır (model başka bir cümle vermiş olsa bile)
-        hit = content_anchor(tr, sents, _card_texts(tpl.id, params))
+        hit = content_anchor(tr, sents, _card_texts(tpl.id, params), near=s.out_start)
         if hit:
             if hit[0].id != s.id and report is not None:
                 report.setdefault("reanchored", []).append(f"{tpl.id}: cümle {s.id} -> {hit[0].id}")

@@ -528,6 +528,18 @@ def get_brief(pid: str):
     return p.load_analysis("senaryo_brief") or p.load_analysis("director_brief") or {}
 
 
+@app.get("/api/projects/{pid}/qa")
+def get_qa(pid: str, fresh: bool = False):
+    """Kalite denetimi: son kurgunun puanı ve sorun listesi (fresh=1 ise yeniden ölçülür)."""
+    p = _project(pid)
+    saved = None if fresh else p.load_analysis("qa")
+    if saved is None:
+        from ..qa import check
+
+        saved = check(p)
+    return saved
+
+
 @app.get("/api/projects/{pid}/senaryo")
 def get_script(pid: str):
     """Senaristin kurgu senaryosu (brif + sahne planı) ve analiz araçlarının video profili."""

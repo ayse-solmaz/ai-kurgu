@@ -233,7 +233,7 @@ export default function App() {
                 }}
               />
             )}
-            {tab === "info" && <InfoPanel view={view} onUndo={async () => setView(await api.undo(view.info.id))} onRedo={async () => setView(await api.redo(view.info.id))} />}
+            {tab === "info" && <InfoPanel view={view} onSeek={(t) => player.current?.seekOut(t)} onUndo={async () => setView(await api.undo(view.info.id))} onRedo={async () => setView(await api.redo(view.info.id))} />}
           </LayoutContent>
         }
       />

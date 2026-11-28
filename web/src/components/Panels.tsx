@@ -13,7 +13,7 @@ import { Heading, Text } from "@astryxdesign/core/Text";
 import { TextArea } from "@astryxdesign/core/TextArea";
 import { TextInput } from "@astryxdesign/core/TextInput";
 import { useEffect, useState } from "react";
-import { api, BRoll, Captions, fmt, media, ProjectView, ThemeInfo, Timeline, watchJob } from "../api";
+import { api, BRoll, Captions, fmt, media, ProjectView, QAReport, ThemeInfo, Timeline, watchJob } from "../api";
 
 // ------------------------------------------------------------------ Sohbet
 
@@ -297,7 +297,64 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
 
 // ------------------------------------------------------------------ Bilgi + geçmiş
 
-export function InfoPanel({ view, onUndo, onRedo }: { view: ProjectView; onUndo: () => void; onRedo: () => void }) {
+const QA_KIND: Record<string, string> = {
+  cut_clip: "Kesim", leftover_repeat: "Tekrar", fragment: "Cümle", timing: "Zamanlama", face: "Yerleşim",
+  icon: "İkon", overlap: "Çakışma", density: "Yoğunluk", story_end: "Hikâye",
+};
+
+/** Ajanın kendi çıktısını ölçtüğü kalite denetimi: puan ve sorunlar (tıklayınca o ana gider). */
+function QAView({ view, onSeek }: { view: ProjectView; onSeek?: (t: number) => void }) {
+  const [qa, setQa] = useState<QAReport | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    api.qa(view.info.id).then(setQa).catch(() => setQa(null));
+  }, [view.info.id, view.info.current_version]);
+  if (!qa) return null;
+  return (
+    <VStack gap={2}>
+      <HStack gap={2} vAlign="center">
+        <StackItem size="fill">
+          <Heading level={4}>Kalite denetimi</Heading>
+        </StackItem>
+        <Badge label={`${qa.score} / 100`} variant={qa.score >= 90 ? "success" : qa.score >= 70 ? "warning" : "error"} />
+        <Button
+          label="Yeniden ölç"
+          size="sm"
+          variant="ghost"
+          isLoading={busy}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              setQa(await api.qa(view.info.id, true));
+            } finally {
+              setBusy(false);
+            }
+          }}
+        />
+      </HStack>
+      <Text type="supporting" color="secondary">
+        {qa.metrics.motions} animasyon · {qa.metrics.brolls} b-roll · dakikada {qa.metrics.motions_per_min} animasyon
+      </Text>
+      {qa.issues.length === 0 ? (
+        <Text color="secondary">Sorun bulunmadı.</Text>
+      ) : (
+        <List density="compact" hasDividers>
+          {qa.issues.map((i, k) => (
+            <ListItem
+              key={k}
+              label={i.msg}
+              description={i.at != null ? fmt(i.at) : undefined}
+              startContent={<Badge label={QA_KIND[i.kind] ?? i.kind} variant={i.severity === "hata" ? "error" : "warning"} />}
+              onClick={i.at != null && onSeek ? () => onSeek(i.at as number) : undefined}
+            />
+          ))}
+        </List>
+      )}
+    </VStack>
+  );
+}
+
+export function InfoPanel({ view, onUndo, onRedo, onSeek }: { view: ProjectView; onUndo: () => void; onRedo: () => void; onSeek?: (t: number) => void }) {
   const tl = view.timeline!;
   const m = tl.meta;
   const [providers, setProviders] = useState<Record<string, string> | null>(null);
@@ -311,6 +368,8 @@ export function InfoPanel({ view, onUndo, onRedo }: { view: ProjectView; onUndo:
 
   return (
     <VStack gap={4} padding={4}>
+      <QAView view={view} onSeek={onSeek} />
+      <Divider />
       {rep && (
         <VStack gap={2}>
           <Heading level={4}>Süre</Heading>

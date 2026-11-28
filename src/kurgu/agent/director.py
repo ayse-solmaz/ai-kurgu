@@ -527,6 +527,15 @@ def run_director(project: Project, style: str | None = None, progress: Progress 
         from ..generate.motion_gfx import fill_motions
 
         report["motion_render"] = fill_motions(project, tl2, rep)
+        # 5g) kalite denetimi: render edilmiş kurguyu ölç (gerçek kart boyu, zamanlama, kesim) ve düzeltilebilenleri düzelt
+        try:
+            from ..qa import auto_fix
+
+            rep("plan", 0.9, "Kalite denetimi")
+            auto_fix(project, tl2, report)
+            project.save_timeline(tl2, note=f"Kalite denetimi: puan {report.get('qa', {}).get('score')}")
+        except Exception as e:
+            report["qa_error"] = str(e)[:300]
 
     # 6) varlıklar + 7) görsel denetçi
     if assets and tl2.brolls:

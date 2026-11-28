@@ -172,6 +172,21 @@ export interface ProjectView {
   report?: { source_duration: number; output_duration: number; cuts: number; removed_by_reason: Record<string, number> };
 }
 
+export interface QAIssue {
+  kind: string;
+  severity: "hata" | "uyarı";
+  msg: string;
+  at: number | null;
+  item: string | null;
+  fixable: boolean;
+}
+
+export interface QAReport {
+  score: number;
+  metrics: { duration: number; motions: number; brolls: number; motions_per_min: number; errors: number; warnings: number };
+  issues: QAIssue[];
+}
+
 export interface AgentDef {
   title: string;
   model: string;
@@ -229,6 +244,7 @@ export const api = {
   direct: (id: string, style: string | null) => req<JobInfo>("POST", `/api/projects/${id}/direct`, { style }),
   brief: (id: string) => req<Record<string, any>>("GET", `/api/projects/${id}/brief`),
   senaryo: (id: string) => req<Senaryo>("GET", `/api/projects/${id}/senaryo`),
+  qa: (id: string, fresh = false) => req<QAReport>("GET", `/api/projects/${id}/qa${fresh ? "?fresh=1" : ""}`),
   themes: () => req<ThemeInfo[]>("GET", "/api/themes"),
   setTheme: (id: string, name: string) => req<ProjectView & { job: JobInfo | null }>("POST", `/api/projects/${id}/theme`, { name }),
   motionTemplates: () => req<MotionTemplate[]>("GET", "/api/motion/templates"),

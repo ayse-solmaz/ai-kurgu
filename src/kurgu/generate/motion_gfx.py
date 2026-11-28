@@ -407,14 +407,6 @@ def place_cards_off_face(project, tl) -> dict:
             m.params = {**m.params, "position": pos}
             m.asset = None  # yeniden render
             moved[m.id] = pos
-        # uzun liste kartı üst yuvadan aşağı uzayıp yüze iner: sığacak kadar madde bırakılır (en az 2)
-        if m.template == "bullet_list" and (m.params.get("position") or "top") == "top" and band.get("found"):
-            items = list(m.params.get("items") or [])
-            fit = max(2, int((band["top"] - 0.02 - 0.19) / 0.075))
-            if len(items) > fit:
-                m.params = {**m.params, "items": items[:fit]}
-                m.asset = None
-                moved[m.id] = f"top, {fit} madde"
     # ekran yazıları (hook, pop): altyazı bölgesine (alt) inmeden üst veya orta, yüzle en az çakışan
     for t in tl.texts:
         if t.style not in ("hook", "pop"):

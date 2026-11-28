@@ -38,6 +38,30 @@ gösterilen bir sayı konuşmada geçmiyorsa kart reddedilir, cümle parçasınd
 "önce/sonra" gibi sıra sözcükleri yoksa süreç animasyonu konmaz, kartlar konuşmacının yüzünün olmadığı
 bölgeye yerleştirilir.
 
+## Kalite denetimi (ajan kendi işini ölçer)
+
+Her otomatik kurgunun sonunda `kurgu.qa` çıktıyı her video için aynı kurallarla ölçer ve düzeltebildiğini
+kendisi düzeltir. Sonuç arayüzde **Bilgi → Kalite denetimi** altında puan ve sorun listesi olarak görünür.
+
+| Kontrol | Nasıl ölçülür | Otomatik düzeltme |
+|---|---|---|
+| Kelime ortasından kesim | Kesilen parçada ses enerjisi var mı (ASR zaman damgasına güvenilmez) | Hayır (temizlik kuralı düzeltildi) |
+| Kalan tekrar | Çıktıda 10 sn içinde tekrarlanan 3+ kelime | Hayır |
+| Bağlamı kopuk / yarım cümle | "Onları", "Ancak" ile başlayıp öncülü kesilmiş; çoğu kesilmiş cümle | Hayır |
+| Yanlış anda animasyon | Kartın yazdığı kelimenin konuşmada söylendiği an ile kartın çıktığı an farkı | Kart söylendiği ana taşınır |
+| Yüzü kapatan kart | Render edilmiş kartın **gerçek** alfa kutusu, videodaki yüz bandıyla | Başka yuvaya alınır, liste kısaltılır veya kart çıkarılır |
+| İkonu bulunamayan kart | Boş daire ile render edilmiş | Kart çıkarılır |
+| Çakışma, yoğunluk, Shorts sonu | Aynı anda iki kart, b-roll üstünde kart, dakikada animasyon, yarım cümleyle biten video | Hayır |
+
+Bir değişikliğin genel olarak iyileştirip iyileştirmediğini görmek için tüm projelerde ölç:
+
+```powershell
+uv run python scripts/eval.py          # yalnızca ölç
+uv run python scripts/eval.py --fix    # düzeltilebilenleri de düzelt
+```
+
+Sonuçlar `eval/history.jsonl` dosyasına eklenir; değişiklikten önce ve sonra ortalama puan karşılaştırılır.
+
 ## Özellikler
 
 | Alan | Ne yapıyor |
@@ -172,6 +196,8 @@ Tüm bileşenlerin listesi: [LICENSES.md](LICENSES.md).
 - [x] **Doğru anda animasyon:** kartlar yazdıkları kelimelerin, b-roll'lar etiketlendikleri ifadenin konuşmada GERÇEKTEN söylendiği ana bağlanır.
 - [x] **Shorts hikâye seçimi:** tek ardışık bölüm yerine hikâyeyi kuran cümleler; video hazırlık cümlesinde bitmez.
 - [ ] **Kesimleri uygulamadan önce onaylatmak:** şu an kesimler önce uygulanıyor, sonra geri alınabiliyor; isteğe bağlı "önce sor" modu.
+- [ ] **Daha çeşitli test videoları:** değerlendirme şu an 2 farklı Türkçe konuşmalı videoyla yapılıyor; farklı konuşmacı, konu, uzunluk ve dillerde videolar eklenmeli.
+- [ ] **İkon seçimi:** çizgi ikon setlerinde olmayan kavramlar için elle yazılmış eş anlamlı listesi var (genel değil); yerine modelin aday ikonlar arasından seçmesi.
 - [ ] **Senaryo kalitesi:** kullanıcının arayüzde yaptığı düzeltmeleri (silinen b-roll, geri alınan kesim, değiştirilen yazı) kaydedip küçük bir modeli (Qwen3 4B/8B) bu dar işler için LoRA ile ince ayarlamak.
 - [x] **İçeriğe göre animasyon sayısı:** sayı, süreç, uyarı, karşılaştırma içeren cümlelere göre hedef belirlenir.
 - [ ] **Şablon kütüphanesini genişletmek** (karşılaştırma, harita, alıntı kartı vb.).

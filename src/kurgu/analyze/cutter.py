@@ -22,6 +22,7 @@ def build_cleanup_cuts(
     duration: float,
     cfg: CleanupCfg,
     vad: list[tuple[float, float]] | None = None,
+    onset_pad: float = 0.20,
 ) -> list[Cut]:
     """Tutulacak konuşmayı belirler, geri kalanı gerekçesiyle birlikte kesim olarak döndürür.
 
@@ -43,7 +44,9 @@ def build_cleanup_cuts(
     keep = merge_ranges(keep_words)
 
     if vad:
-        vad_wide = merge_ranges([(a - 0.12, b + 0.12) for a, b in vad])
+        # VAD konuşmanın başlangıcını geç yakalayabiliyor (yumuşak ünsüzler: s, f, h, p): başlangıçta daha geniş pay,
+        # yoksa sessizlik kesimi kelimenin ilk hecesini yer ("Peki" -> "eki")
+        vad_wide = merge_ranges([(a - onset_pad, b + 0.12) for a, b in vad])
         clipped = intersect(keep, vad_wide)
         # VAD bir kelimeyi tamamen kaçırdıysa kelimeyi yine de koru
         lost = [r for r in keep if not any(_overlap(r, c) > 0 for c in clipped)]

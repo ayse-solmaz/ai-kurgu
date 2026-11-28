@@ -26,9 +26,9 @@ ICON_SETS: dict[str, str] = {
 MONO_SETS = ["ph", "lucide", "tabler", "mdi"]  # sade (apple) tema: tek renk çizgi ikonlar
 MONO_SYNONYMS: dict[str, list[str]] = {
     "microbe": ["bacteria", "virus"], "germ": ["bacteria"], "pathogen": ["virus"], "bacteria": ["virus"],
-    "lizard": ["turtle", "paw"], "reptile": ["turtle"], "dna": ["dna", "atom"], "molecule": ["atom"],
+    "lizard": ["turtle", "paw"], "reptile": ["turtle"], "dna": ["dna", "atom"], "rna": ["dna"], "mrna": ["dna", "syringe"], "vaccine": ["syringe"], "molecule": ["atom"],
     "thinking face": ["lightbulb", "brain"], "ai": ["robot", "cpu", "brain"], "artificial intelligence": ["robot", "cpu"], "high voltage": ["lightning"], "fire": ["flame"],
-    "syringe": ["syringe", "vaccine"], "vaccine": ["syringe"], "pill": ["pill", "medicine"], "factory": ["factory", "building"],
+    "syringe": ["syringe", "vaccine"], "pill": ["pill", "medicine"], "factory": ["factory", "building"],
     "test tube": ["flask", "test-tube"], "microscope": ["microscope", "flask"], "chart": ["chart-bar"],
 }
 API = "https://api.iconify.design"

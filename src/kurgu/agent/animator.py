@@ -358,6 +358,8 @@ def place_picks(tl: Timeline, tr: Transcript, sents: list, picks_in: list[Motion
             rejected.append(f"{tpl.id}: aynı şablon sınırı ({same_limit})")
             continue
         raw = dict(pick.params or {})
+        if isinstance(raw.get("words"), list):  # "Sorun şuydu." -> ekranda noktalama yok
+            raw["words"] = [w.strip().rstrip(".,;:!?") if isinstance(w, str) else w for w in raw["words"]]
         if tpl.id == "big_number" and re.search(r"[A-Za-zÇĞİÖŞÜçğıöşü]", str(raw.get("prefix", ""))):
             # model birimi öne koymuş ("milyon" + 600): birim sona taşınır -> "600 milyon yıl"
             raw["suffix"] = f" {raw.pop('prefix')} {raw.get('suffix', '')}".rstrip()
